@@ -11,7 +11,8 @@ import {
   User, 
   LogOut,
   Menu,
-  X
+  X,
+  Clock
 } from "lucide-react";
 import { useState } from "react";
 
@@ -48,6 +49,12 @@ export default function Layout({ children }) {
       href: '/leaves',
       icon: Calendar,
       current: location.startsWith('/leaves'),
+    },
+    {
+      name: 'Attendance',
+      href: '/attendance',
+      icon: Clock,
+      current: location.startsWith('/attendance'),
     },
     ...(isAdmin ? [
       {
@@ -91,8 +98,8 @@ export default function Layout({ children }) {
             const IconComponent = item.icon;
             return (
               <Link key={item.name} href={item.href}>
-                <a
-                  className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                <div
+                  className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ${
                     item.current
                       ? 'bg-primary text-white'
                       : 'text-gray-700 hover:bg-gray-100'
@@ -101,7 +108,7 @@ export default function Layout({ children }) {
                 >
                   <IconComponent className="mr-3 h-4 w-4" />
                   {item.name}
-                </a>
+                </div>
               </Link>
             );
           })}

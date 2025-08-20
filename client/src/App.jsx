@@ -18,6 +18,7 @@ import AddPayroll from "@/pages/payroll/add-payroll";
 import EditPayroll from "@/pages/payroll/edit-payroll";
 import LeaveRequests from "@/pages/leaves/leave-requests";
 import ApplyLeave from "@/pages/leaves/apply-leave";
+import AttendancePage from "@/pages/attendance";
 import Profile from "@/pages/profile";
 import Reports from "@/pages/reports";
 
@@ -43,6 +44,7 @@ function Router() {
       }} />
       <ProtectedRoute path="/leaves" component={LeaveRequests} />
       <ProtectedRoute path="/leaves/apply" component={ApplyLeave} />
+      <ProtectedRoute path="/attendance" component={AttendancePage} />
       <ProtectedRoute path="/profile" component={Profile} />
       <ProtectedRoute path="/reports" component={Reports} />
       <Route component={NotFound} />

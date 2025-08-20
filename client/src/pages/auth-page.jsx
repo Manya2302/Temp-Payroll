@@ -1,4 +1,5 @@
 import { useState } from "react";
+import * as React from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import { Calculator, Eye, EyeOff } from "lucide-react";
@@ -26,13 +27,18 @@ export default function AuthPage() {
   });
 
   // Redirect if already logged in
-  if (user) {
-    if (user.role === 'admin') {
-      setLocation("/admin");
-    } else {
-      setLocation("/employee");
+  React.useEffect(() => {
+    if (user) {
+      if (user.role === 'admin') {
+        setLocation("/admin");
+      } else {
+        setLocation("/employee");
+      }
     }
-    return null;
+  }, [user, setLocation]);
+
+  if (user) {
+    return null; // Will redirect
   }
 
   const handleLogin = (e) => {
