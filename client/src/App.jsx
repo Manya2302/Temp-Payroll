@@ -25,8 +25,8 @@ import Reports from "@/pages/reports";
 function Router() {
   return (
     <Switch>
+      <Route path="/" component={HomePage} />
       <Route path="/auth" component={AuthPage} />
-      <ProtectedRoute path="/" component={HomePage} />
       <ProtectedRoute path="/admin" component={AdminDashboard} />
       <ProtectedRoute path="/employee" component={EmployeeDashboard} />
       <ProtectedRoute path="/employees" component={EmployeeList} />
