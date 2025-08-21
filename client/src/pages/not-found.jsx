@@ -1,31 +1,40 @@
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Home, ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
-import { ArrowLeft, AlertTriangle } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-md w-full text-center">
-        <div className="mb-8">
-          <div className="mx-auto w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-4">
-            <AlertTriangle className="h-10 w-10 text-red-600" />
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-4 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+            <span className="text-2xl font-bold text-red-600">404</span>
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">404</h1>
-          <h2 className="text-xl font-semibold text-gray-700 mb-2">Page Not Found</h2>
+          <CardTitle className="text-2xl">Page Not Found</CardTitle>
+        </CardHeader>
+        <CardContent className="text-center space-y-4">
           <p className="text-gray-600">
             The page you're looking for doesn't exist or has been moved.
           </p>
-        </div>
-        
-        <div className="space-y-4">
-          <Link href="/">
-            <Button className="w-full">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Go Back Home
+          <div className="space-y-2">
+            <Link href="/">
+              <Button className="w-full">
+                <Home className="w-4 h-4 mr-2" />
+                Go Home
+              </Button>
+            </Link>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => window.history.back()}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Go Back
             </Button>
-          </Link>
-        </div>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

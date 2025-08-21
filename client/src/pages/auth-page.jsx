@@ -1,265 +1,296 @@
 import { useState } from "react";
-import * as React from "react";
-import { useAuth } from "@/hooks/use-auth";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { Calculator, Eye, EyeOff } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import { LogIn, UserPlus, Eye, EyeOff } from "lucide-react";
+
+const loginSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(1, "Password is required"),
+});
+
+const registerSchema = z.object({
+  username: z.string().min(3, "Username must be at least 3 characters"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  role: z.enum(["admin", "employee"]),
+});
 
 export default function AuthPage() {
-  const { user, loginMutation, registerMutation } = useAuth();
-  const [, setLocation] = useLocation();
+  const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
-  
-  const [loginData, setLoginData] = useState({
-    username: "",
-    password: "",
-  });
-  
-  const [registerData, setRegisterData] = useState({
-    username: "",
-    password: "",
-    role: "employee",
+  const [, setLocation] = useLocation();
+  const { login } = useAuth();
+  const { toast } = useToast();
+
+  const loginForm = useForm({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+    },
   });
 
-  // Redirect if already logged in
-  React.useEffect(() => {
-    if (user) {
-      if (user.role === 'admin') {
+  const registerForm = useForm({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+      role: "employee",
+    },
+  });
+
+  const loginMutation = useMutation({
+    mutationFn: async (data) => {
+      const response = await apiRequest("POST", "/api/auth/login", data);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      login(data.user);
+      toast({
+        title: "Success",
+        description: "Logged in successfully",
+      });
+      // Redirect based on role
+      if (data.user.role === 'admin') {
         setLocation("/admin");
       } else {
         setLocation("/employee");
       }
-    }
-  }, [user, setLocation]);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
-  if (user) {
-    return null; // Will redirect
-  }
+  const registerMutation = useMutation({
+    mutationFn: async (data) => {
+      const response = await apiRequest("POST", "/api/auth/register", data);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      login(data.user);
+      toast({
+        title: "Success",
+        description: "Account created successfully",
+      });
+      // Redirect based on role
+      if (data.user.role === 'admin') {
+        setLocation("/admin");
+      } else {
+        setLocation("/employee");
+      }
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    loginMutation.mutate(loginData);
+  const onLoginSubmit = (data) => {
+    loginMutation.mutate(data);
   };
 
-  const handleRegister = (e) => {
-    e.preventDefault();
-    registerMutation.mutate(registerData);
+  const onRegisterSubmit = (data) => {
+    registerMutation.mutate(data);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex" data-testid="auth-page">
-      {/* Left Column - Forms */}
-      <div className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-          <div className="text-center">
-            <div className="flex items-center justify-center space-x-2 mb-6">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                <Calculator className="text-white h-5 w-5" />
-              </div>
-              <h1 className="text-2xl font-bold text-gray-900" data-testid="text-app-title">Loco</h1>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold">
+            {isLogin ? "Welcome Back" : "Create Account"}
+          </CardTitle>
+          <CardDescription>
+            {isLogin 
+              ? "Sign in to your Loco Payroll account" 
+              : "Get started with Loco Payroll Management"}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLogin ? (
+            <Form {...loginForm}>
+              <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
+                <FormField
+                  control={loginForm.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Username</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter your username" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-          <Tabs defaultValue="login" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2" data-testid="tabs-auth">
-              <TabsTrigger value="login" data-testid="tab-login">Sign In</TabsTrigger>
-              <TabsTrigger value="register" data-testid="tab-register">Register</TabsTrigger>
-            </TabsList>
+                <FormField
+                  control={loginForm.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Enter your password"
+                            {...field}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-0 top-0 h-full px-3"
+                            onClick={() => setShowPassword(!showPassword)}
+                          >
+                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <TabsContent value="login" data-testid="form-login">
-              <Card>
-                <CardHeader>
-                  <CardTitle data-testid="text-login-title">Welcome back</CardTitle>
-                  <CardDescription data-testid="text-login-description">
-                    Please sign in to your account
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleLogin} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="username" data-testid="label-login-username">Username</Label>
-                      <Input
-                        id="username"
-                        type="text"
-                        placeholder="Enter your username"
-                        value={loginData.username}
-                        onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
-                        required
-                        data-testid="input-login-username"
-                      />
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={loginMutation.isPending}
+                >
+                  {loginMutation.isPending ? (
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Signing in...
                     </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="password" data-testid="label-login-password">Password</Label>
-                      <div className="relative">
-                        <Input
-                          id="password"
-                          type={showPassword ? "text" : "password"}
-                          placeholder="Enter your password"
-                          value={loginData.password}
-                          onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                          required
-                          data-testid="input-login-password"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                          onClick={() => setShowPassword(!showPassword)}
-                          data-testid="button-toggle-password"
+                  ) : (
+                    <>
+                      <LogIn className="w-4 h-4 mr-2" />
+                      Sign In
+                    </>
+                  )}
+                </Button>
+              </form>
+            </Form>
+          ) : (
+            <Form {...registerForm}>
+              <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
+                <FormField
+                  control={registerForm.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Username</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Choose a username" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={registerForm.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Create a password"
+                            {...field}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-0 top-0 h-full px-3"
+                            onClick={() => setShowPassword(!showPassword)}
+                          >
+                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={registerForm.control}
+                  name="role"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Role</FormLabel>
+                      <FormControl>
+                        <select
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                          {...field}
                         >
-                          {showPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
+                          <option value="employee">Employee</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={registerMutation.isPending}
+                >
+                  {registerMutation.isPending ? (
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Creating account...
                     </div>
+                  ) : (
+                    <>
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Create Account
+                    </>
+                  )}
+                </Button>
+              </form>
+            </Form>
+          )}
 
-                    <div className="text-sm text-gray-600">
-                      <p>Demo credentials:</p>
-                      <p><strong>Admin:</strong> admin / admin@123</p>
-                      <p><strong>Employee:</strong> emp / emp@123</p>
-                    </div>
-
-                    <Button 
-                      type="submit" 
-                      className="w-full" 
-                      disabled={loginMutation.isPending}
-                      data-testid="button-login"
-                    >
-                      {loginMutation.isPending ? "Signing In..." : "Sign In"}
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="register" data-testid="form-register">
-              <Card>
-                <CardHeader>
-                  <CardTitle data-testid="text-register-title">Create Account</CardTitle>
-                  <CardDescription data-testid="text-register-description">
-                    Sign up for a new account
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleRegister} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="reg-username" data-testid="label-register-username">Username</Label>
-                      <Input
-                        id="reg-username"
-                        type="text"
-                        placeholder="Choose a username"
-                        value={registerData.username}
-                        onChange={(e) => setRegisterData({ ...registerData, username: e.target.value })}
-                        required
-                        data-testid="input-register-username"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="reg-password" data-testid="label-register-password">Password</Label>
-                      <div className="relative">
-                        <Input
-                          id="reg-password"
-                          type={showPassword ? "text" : "password"}
-                          placeholder="Choose a password"
-                          value={registerData.password}
-                          onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
-                          required
-                          data-testid="input-register-password"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                          onClick={() => setShowPassword(!showPassword)}
-                          data-testid="button-toggle-password-register"
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="role" data-testid="label-register-role">Role</Label>
-                      <Select
-                        value={registerData.role}
-                        onValueChange={(value) => setRegisterData({ ...registerData, role: value })}
-                      >
-                        <SelectTrigger data-testid="select-register-role">
-                          <SelectValue placeholder="Select role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="employee">Employee</SelectItem>
-                          <SelectItem value="admin">Admin</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <Button 
-                      type="submit" 
-                      className="w-full" 
-                      disabled={registerMutation.isPending}
-                      data-testid="button-register"
-                    >
-                      {registerMutation.isPending ? "Creating Account..." : "Create Account"}
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
-
-      {/* Right Column - Hero */}
-      <div className="hidden lg:flex lg:flex-1 lg:relative">
-        <div className="flex-1 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-12">
-          <div className="max-w-md text-center">
-            <div className="w-16 h-16 bg-white rounded-2xl shadow-lg mx-auto mb-6 flex items-center justify-center">
-              <Calculator className="h-8 w-8 text-primary" />
-            </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Streamline Your Payroll
-            </h2>
-            <p className="text-lg text-gray-600 mb-6">
-              Manage employees, process payments, track attendance, and generate comprehensive reports all in one place.
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              {isLogin ? "Don't have an account?" : "Already have an account?"}
             </p>
-            <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
-              <div className="bg-white rounded-lg p-3 shadow-sm">
-                <div className="font-semibold">Employee Management</div>
-                <div className="text-gray-500">Add, edit, and track staff</div>
-              </div>
-              <div className="bg-white rounded-lg p-3 shadow-sm">
-                <div className="font-semibold">Payroll Processing</div>
-                <div className="text-gray-500">Automated calculations</div>
-              </div>
-              <div className="bg-white rounded-lg p-3 shadow-sm">
-                <div className="font-semibold">Leave Management</div>
-                <div className="text-gray-500">Track time off requests</div>
-              </div>
-              <div className="bg-white rounded-lg p-3 shadow-sm">
-                <div className="font-semibold">Reports & Analytics</div>
-                <div className="text-gray-500">Detailed insights</div>
-              </div>
-            </div>
+            <Button
+              variant="link"
+              className="p-0 h-auto font-semibold"
+              onClick={() => setIsLogin(!isLogin)}
+            >
+              {isLogin ? "Create one here" : "Sign in here"}
+            </Button>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

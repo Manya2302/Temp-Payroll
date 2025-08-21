@@ -5,22 +5,22 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "./lib/protected-route";
-import NotFound from "@/pages/not-found";
+import NotFound from "@/pages/not-found.jsx";
 import HomePage from "@/pages/home-page";
-import AuthPage from "@/pages/auth-page";
-import AdminDashboard from "@/pages/admin-dashboard";
-import EmployeeDashboard from "@/pages/employee-dashboard";
-import EmployeeList from "@/pages/employees/employee-list";
-import AddEmployee from "@/pages/employees/add-employee";
-import EditEmployee from "@/pages/employees/edit-employee";
-import PayrollList from "@/pages/payroll/payroll-list";
-import AddPayroll from "@/pages/payroll/add-payroll";
-import EditPayroll from "@/pages/payroll/edit-payroll";
-import LeaveRequests from "@/pages/leaves/leave-requests";
-import ApplyLeave from "@/pages/leaves/apply-leave";
-import AttendancePage from "@/pages/attendance";
-import Profile from "@/pages/profile";
-import Reports from "@/pages/reports";
+import AuthPage from "@/pages/auth-page.jsx";
+import AdminDashboard from "@/pages/admin-dashboard.jsx";
+import EmployeeDashboard from "@/pages/employee-dashboard.jsx";
+import EmployeeList from "@/pages/employees/employee-list.jsx";
+import AddEmployee from "@/pages/employees/add-employee.jsx";
+import EditEmployee from "@/pages/employees/edit-employee.jsx";
+import PayrollList from "@/pages/payroll/payroll-list.jsx";
+import AddPayroll from "@/pages/payroll/add-payroll.jsx";
+import EditPayroll from "@/pages/payroll/edit-payroll.jsx";
+import LeaveRequests from "@/pages/leaves/leave-requests.jsx";
+import ApplyLeave from "@/pages/leaves/apply-leave.jsx";
+import AttendancePage from "@/pages/attendance.jsx";
+import Profile from "@/pages/profile.jsx";
+import Reports from "@/pages/reports.jsx";
 
 function Router() {
   return (

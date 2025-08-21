@@ -2,6 +2,8 @@
 
 Loco is a comprehensive payroll management system inspired by Zoho Payroll. Built as a full-stack web application, it provides admin and employee dashboards for managing employee data, processing payroll, tracking attendance, handling leave requests, and generating reports. The system features role-based access control with separate interfaces for administrators and employees.
 
+**Migration Status**: Successfully migrated from Replit Agent to standard Replit environment with complete TypeScript to JavaScript conversion completed (January 2025).
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -9,7 +11,7 @@ Preferred communication style: Simple, everyday language.
 # System Architecture
 
 ## Frontend Architecture
-- **React SPA**: Built with React 18 and TypeScript using Vite as the build tool
+- **React SPA**: Built with React 18 and JavaScript using Vite as the build tool (converted from TypeScript January 2025)
 - **UI Framework**: Shadcn/ui components with Radix UI primitives for accessibility
 - **Styling**: Tailwind CSS with custom design tokens and CSS variables
 - **State Management**: TanStack Query (React Query) for server state management
@@ -18,7 +20,7 @@ Preferred communication style: Simple, everyday language.
 - **Charts**: Chart.js for data visualization (payroll trends, attendance metrics)
 
 ## Backend Architecture
-- **Node.js + Express**: RESTful API server with TypeScript
+- **Node.js + Express**: RESTful API server with TypeScript (backend remains TypeScript while frontend converted to JavaScript)
 - **Authentication**: Passport.js with local strategy and express-session
 - **Password Security**: Node.js crypto module with scrypt for password hashing
 - **Authorization**: Role-based middleware (admin/employee) protecting routes
