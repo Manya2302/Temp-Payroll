@@ -205,6 +205,16 @@ export class DatabaseStorage {
     await db.delete(attendance).where(eq(attendance.id, id));
   }
 
+  async getTodayAttendance(employeeId, today) {
+    const [record] = await db.select().from(attendance)
+      .where(and(
+        eq(attendance.employeeId, employeeId),
+        gte(attendance.date, today),
+        lte(attendance.date, new Date(today.getTime() + 24 * 60 * 60 * 1000))
+      ));
+    return record || null;
+  }
+
   // Dashboard Stats
   async getDashboardStats() {
     const [totalEmployees] = await db.select({ count: sql`count(*)` }).from(employees);

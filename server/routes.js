@@ -318,4 +318,92 @@ export function createRoutes(app) {
       res.status(500).json({ message: 'Failed to fetch payslips' });
     }
   });
+
+  // Attendance check-in/check-out endpoints
+  app.get('/api/attendance/today', requireAuth, async (req, res) => {
+    try {
+      const employee = await storage.getEmployeeByUserId(req.user.id);
+      if (!employee) return res.status(404).json({ message: 'Employee profile not found' });
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      const todayRecord = await storage.getTodayAttendance(employee.id, today);
+      res.json(todayRecord);
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to fetch today attendance' });
+    }
+  });
+
+  app.post('/api/attendance/checkin', requireAuth, async (req, res) => {
+    try {
+      const employee = await storage.getEmployeeByUserId(req.user.id);
+      if (!employee) return res.status(404).json({ message: 'Employee profile not found' });
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      // Check if already checked in today
+      const existingRecord = await storage.getTodayAttendance(employee.id, today);
+      if (existingRecord && existingRecord.checkIn) {
+        return res.status(400).json({ message: 'Already checked in today' });
+      }
+      
+      const checkInTime = new Date();
+      const attendanceData = {
+        employeeId: employee.id,
+        date: today,
+        checkIn: checkInTime,
+        status: 'present'
+      };
+      
+      let attendance;
+      if (existingRecord) {
+        attendance = await storage.updateAttendance(existingRecord.id, attendanceData);
+      } else {
+        attendance = await storage.createAttendance(attendanceData);
+      }
+      
+      res.json(attendance);
+    } catch (e) {
+      console.error('Check-in error:', e);
+      res.status(500).json({ message: 'Failed to check in' });
+    }
+  });
+
+  app.post('/api/attendance/checkout', requireAuth, async (req, res) => {
+    try {
+      const employee = await storage.getEmployeeByUserId(req.user.id);
+      if (!employee) return res.status(404).json({ message: 'Employee profile not found' });
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const existingRecord = await storage.getTodayAttendance(employee.id, today);
+      if (!existingRecord || !existingRecord.checkIn) {
+        return res.status(400).json({ message: 'No check-in record found for today' });
+      }
+      
+      if (existingRecord.checkOut) {
+        return res.status(400).json({ message: 'Already checked out today' });
+      }
+      
+      const checkOutTime = new Date();
+      const checkInTime = new Date(existingRecord.checkIn);
+      const hoursWorked = ((checkOutTime - checkInTime) / (1000 * 60 * 60)).toFixed(2);
+      
+      const attendanceData = {
+        checkOut: checkOutTime,
+        hoursWorked: hoursWorked
+      };
+      
+      const attendance = await storage.updateAttendance(existingRecord.id, attendanceData);
+      res.json(attendance);
+    } catch (e) {
+      console.error('Check-out error:', e);
+      res.status(500).json({ message: 'Failed to check out' });
+    }
+  });
 }

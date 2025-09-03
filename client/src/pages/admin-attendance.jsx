@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Layout from "@/components/layout/layout";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default function AdminAttendancePage() {
   const [period, setPeriod] = useState("2025-08");
