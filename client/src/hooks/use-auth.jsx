@@ -26,7 +26,10 @@ export function AuthProvider({ children }) {
       return await res.json();
     },
     onSuccess: (user) => {
+      console.log('[auth] login success', user);
       queryClient.setQueryData(["/api/user"], user);
+      // Force refetch to ensure session cookie is recognized
+      queryClient.invalidateQueries(["/api/user"]);
       toast({
         title: "Login successful",
         description: `Welcome back, ${user.username}!`,
@@ -90,7 +93,8 @@ export function AuthProvider({ children }) {
         error,
         loginMutation,
         logoutMutation,
-        registerMutation,
+  registerMutation,
+  setUser: (u) => queryClient.setQueryData(["/api/user"], u),
       }}
     >
       {children}

@@ -46,12 +46,12 @@ export default function HomePage() {
               <h1 className="text-2xl font-bold text-gray-900">Loco</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <Link href="/auth">
+              <Link href="/login">
                 <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white">
                   Sign In
                 </Button>
               </Link>
-              <Link href="/auth">
+              <Link href="/register">
                 <Button className="bg-primary hover:bg-primary/90">
                   Get Started
                 </Button>
@@ -75,7 +75,7 @@ export default function HomePage() {
                 Handle employee data, process payments, track attendance, and generate reports all in one place.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <Link href="/auth">
+                <Link href="/register">
                   <Button size="lg" className="bg-primary hover:bg-primary/90 px-8 py-4 text-lg">
                     Start Free Trial
                     <ArrowRight className="ml-2 h-5 w-5" />
@@ -303,7 +303,7 @@ export default function HomePage() {
             <h3 className="text-2xl font-bold text-gray-900 mb-4">Ready to Transform Your Payroll?</h3>
             <p className="text-gray-600 mb-6">Join hundreds of companies already using Loco</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
-              <Link href="/auth">
+              <Link href="/register">
                 <Button size="lg" className="flex-1 bg-primary hover:bg-primary/90">
                   Get Started Free
                 </Button>

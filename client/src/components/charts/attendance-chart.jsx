@@ -1,7 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Chart, ArcElement, Tooltip, Legend } from 'chart.js';
-
-Chart.register(ArcElement, Tooltip, Legend);
+import { ensureChartRegistered } from '@/lib/chart';
 
 export function AttendanceChart() {
   const chartRef = useRef(null);
@@ -18,7 +16,8 @@ export function AttendanceChart() {
       chartInstance.current.destroy();
     }
 
-    chartInstance.current = new Chart(ctx, {
+  const Chart = ensureChartRegistered();
+  chartInstance.current = new Chart(ctx, {
       type: 'doughnut',
       data: {
         labels: ['Present', 'Absent', 'Late'],

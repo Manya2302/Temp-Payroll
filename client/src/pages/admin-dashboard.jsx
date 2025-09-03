@@ -4,18 +4,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Users, DollarSign, Calendar, TrendingUp, Clock, FileText } from "lucide-react";
 import Layout from "@/components/layout/layout";
-import { AttendanceChart } from "@/components/charts/attendance-chart";
-import { PayrollChart } from "@/components/charts/payroll-chart";
+import React from 'react';
+import { AttendanceChart } from '@/components/charts/attendance-chart';
+import { PayrollChart } from '@/components/charts/payroll-chart';
 import { Link } from "wouter";
 
 export default function AdminDashboard() {
   const { user } = useAuth();
+  // Log after user resolved
+  console.log('[admin-dashboard] render start', { hasUser: !!user });
+  if (!user) {
+    return <div className="p-6 text-sm text-gray-500">No user context.</div>;
+  }
 
-  const { data: stats } = useQuery({
+  const { data: stats, isLoading: statsLoading, error: statsError } = useQuery({
     queryKey: ["/api/dashboard/stats"],
   });
 
-  const { data: recentActivity } = useQuery({
+  const { data: recentActivity, error: activityError, isLoading: activityLoading } = useQuery({
     queryKey: ["/api/dashboard/activity"],
   });
 
@@ -52,13 +58,19 @@ export default function AdminDashboard() {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-6" data-debug="admin-dashboard-root">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
           <p className="text-gray-600 mt-2">Welcome back, {user?.username}. Here's your organization overview.</p>
         </div>
 
         {/* Stats Cards */}
+        {(statsLoading || statsError) && (
+          <div className="text-sm flex gap-4 flex-wrap">
+            {statsLoading && <span className="text-gray-500">Loading stats…</span>}
+            {statsError && <span className="text-red-500">Stats error</span>}
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -107,7 +119,7 @@ export default function AdminDashboard() {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">94.2%</div>
+              <div className="text-2xl font-bold">{stats ? `${stats.presentToday || 0} present` : '—'}</div>
               <p className="text-xs text-muted-foreground">
                 +1.2% from last week
               </p>
@@ -172,15 +184,21 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentActivity?.slice(0, 5).map((activity, index) => (
-                <div key={index} className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-900">{activity.description}</p>
-                    <p className="text-xs text-gray-500">{activity.timestamp}</p>
+              {activityLoading ? (
+                <div className="text-center py-4 text-sm text-gray-500">Loading activity...</div>
+              ) : Array.isArray(recentActivity) && recentActivity.length > 0 ? (
+                recentActivity.slice(0,5).map((activity, index) => (
+                  <div key={index} className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-900">{activity.description}</p>
+                      <p className="text-xs text-gray-500">{activity.timestamp}</p>
+                    </div>
                   </div>
-                </div>
-              )) || (
+                ))
+              ) : activityError ? (
+                <div className="text-center py-4 text-sm text-red-500">Failed to load activity</div>
+              ) : (
                 <div className="text-center py-4">
                   <Clock className="mx-auto h-8 w-8 text-gray-400" />
                   <p className="mt-2 text-sm text-gray-500">No recent activity</p>
@@ -189,7 +207,7 @@ export default function AdminDashboard() {
             </div>
           </CardContent>
         </Card>
-      </div>
+  </div>
     </Layout>
   );
 }

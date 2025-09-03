@@ -36,6 +36,15 @@ export class DatabaseStorage {
     return user;
   }
 
+  async updateUserPassword(id, newPassword) {
+    const [user] = await db
+      .update(users)
+      .set({ password: newPassword })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
   // Employees
   async getEmployee(id) {
     const [employee] = await db.select().from(employees).where(eq(employees.id, id));

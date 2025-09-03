@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -90,21 +90,14 @@ export default function Profile() {
     },
   });
 
+  // Password change endpoint not implemented on server yet.
   const changePasswordMutation = useMutation({
-    mutationFn: async (data) => {
-      const response = await apiRequest("POST", "/api/auth/change-password", data);
-      return response.json();
-    },
-    onSuccess: () => {
-      passwordForm.reset();
-      toast({
-        title: "Success",
-        description: "Password changed successfully",
-      });
+    mutationFn: async () => {
+      throw new Error("Password change not available");
     },
     onError: (error) => {
       toast({
-        title: "Error",
+        title: "Not Implemented",
         description: error.message,
         variant: "destructive",
       });

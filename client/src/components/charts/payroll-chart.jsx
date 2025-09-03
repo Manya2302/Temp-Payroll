@@ -1,17 +1,5 @@
 import { useEffect, useRef } from 'react';
-import {
-  Chart,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-} from 'chart.js';
-
-Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
+import { ensureChartRegistered } from '@/lib/chart';
 
 export function PayrollChart() {
   const chartRef = useRef(null);
@@ -28,7 +16,8 @@ export function PayrollChart() {
       chartInstance.current.destroy();
     }
 
-    chartInstance.current = new Chart(ctx, {
+  const Chart = ensureChartRegistered();
+  chartInstance.current = new Chart(ctx, {
       type: 'line',
       data: {
         labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],

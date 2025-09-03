@@ -2,7 +2,8 @@ import express from "express";
 import fs from "fs";
 import path from "path";
 import { createServer as createViteServer, createLogger } from "vite";
-import viteConfig from "../vite.config.js";
+// Adjusted to require CommonJS config
+import viteConfig from "../vite.config.cjs";
 import { nanoid } from "nanoid";
 
 const viteLogger = createLogger();

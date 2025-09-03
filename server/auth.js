@@ -15,7 +15,12 @@ async function hashPassword(password) {
 }
 
 async function comparePasswords(supplied, stored) {
+  // Legacy plaintext support: if no salt delimiter present treat stored as plain
+  if (!stored.includes('.')) {
+    return supplied === stored;
+  }
   const [hashed, salt] = stored.split(".");
+  if (!hashed || !salt) return false;
   const hashedBuf = Buffer.from(hashed, "hex");
   const suppliedBuf = await scryptAsync(supplied, salt, 64);
   return timingSafeEqual(hashedBuf, suppliedBuf);
@@ -29,6 +34,8 @@ export function setupAuth(app) {
     store: storage.sessionStore,
     cookie: {
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      sameSite: 'lax',
+      secure: false,
     },
   };
 
@@ -36,6 +43,23 @@ export function setupAuth(app) {
   app.use(session(sessionSettings));
   app.use(passport.initialize());
   app.use(passport.session());
+
+  // Ensure a default admin exists with known credentials (admin / admin@123)
+  (async () => {
+    try {
+      const existing = await storage.getUserByUsername('admin');
+      if (!existing) {
+        const adminUser = await storage.createUser({
+          username: 'admin',
+          password: await hashPassword('admin@123'),
+          role: 'admin'
+        });
+        console.log('[auth] Seeded default admin user');
+      }
+    } catch (e) {
+      console.error('[auth] Failed to seed admin user', e);
+    }
+  })();
 
   passport.use(
     new LocalStrategy(async (username, password, done) => {
@@ -85,11 +109,21 @@ export function setupAuth(app) {
       
       // Check database for other users
       const user = await storage.getUserByUsername(username);
-      if (!user || !(await comparePasswords(password, user.password))) {
-        return done(null, false);
-      } else {
-        return done(null, user);
+      if (!user) return done(null, false);
+      const matches = await comparePasswords(password, user.password);
+      if (!matches) return done(null, false);
+      // Upgrade legacy plaintext password to hashed format
+      if (!user.password.includes('.')) {
+        try {
+          const newHashed = await hashPassword(password);
+          const updated = await storage.updateUserPassword(user.id, newHashed);
+          return done(null, updated);
+        } catch (e) {
+          // If upgrade fails still allow login this time
+          return done(null, user);
+        }
       }
+      return done(null, user);
     }),
   );
 
@@ -101,6 +135,7 @@ export function setupAuth(app) {
 
   app.post("/api/register", async (req, res, next) => {
     try {
+      console.log('[auth] register attempt', req.body?.username, req.body?.role);
       const validatedData = insertUserSchema.parse(req.body);
       const existingUser = await storage.getUserByUsername(validatedData.username);
       if (existingUser) {
@@ -132,12 +167,23 @@ export function setupAuth(app) {
         res.status(201).json(user);
       });
     } catch (error) {
+      console.error('[auth] register error', error);
       res.status(400).json({ message: "Invalid registration data" });
     }
   });
 
-  app.post("/api/login", passport.authenticate("local"), (req, res) => {
-    res.status(200).json(req.user);
+  app.post("/api/login", (req, res, next) => {
+    console.log('[auth] login attempt', req.body?.username);
+    passport.authenticate("local", (err, user) => {
+      if (err) return next(err);
+      if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+      req.logIn(user, (err2) => {
+        if (err2) return next(err2);
+        console.log('[auth] login success', user.username, user.role);
+        console.log('[auth] session after login', req.session);
+        res.status(200).json(user);
+      });
+    })(req, res, next);
   });
 
   app.post("/api/logout", (req, res, next) => {
@@ -148,6 +194,7 @@ export function setupAuth(app) {
   });
 
   app.get("/api/user", (req, res) => {
+    console.log('[auth] /api/user session', req.session);
     if (!req.isAuthenticated()) return res.sendStatus(401);
     res.json(req.user);
   });

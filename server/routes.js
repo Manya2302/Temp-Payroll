@@ -45,6 +45,13 @@ export function createRoutes(app) {
     }
   });
 
+  // Simple recent activity placeholder for admin dashboard
+  app.get("/api/dashboard/activity", requireAdmin, async (_req, res) => {
+    res.json([
+      { description: 'System initialized', timestamp: new Date().toISOString() },
+    ]);
+  });
+
   // Employee routes
   app.get("/api/employees", requireAuth, async (req, res) => {
     try {
@@ -265,6 +272,50 @@ export function createRoutes(app) {
       res.json(attendance);
     } catch (error) {
       res.status(400).json({ message: "Failed to update attendance" });
+    }
+  });
+
+  // Employee self-service endpoints used by employee dashboard
+  app.get('/api/employee/profile', requireAuth, async (req, res) => {
+    try {
+      const employee = await storage.getEmployeeByUserId(req.user.id);
+      if (!employee) return res.status(404).json({ message: 'Employee profile not found' });
+      res.json(employee);
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to fetch profile' });
+    }
+  });
+
+  app.get('/api/employee/leave-balance', requireAuth, async (req, res) => {
+    try {
+      const employee = await storage.getEmployeeByUserId(req.user.id);
+      if (!employee) return res.status(404).json({ message: 'Employee profile not found' });
+      const stats = await storage.getEmployeeDashboardStats(employee.id);
+      res.json({ leaveBalance: stats.leaveBalance });
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to fetch leave balance' });
+    }
+  });
+
+  app.get('/api/employee/attendance', requireAuth, async (req, res) => {
+    try {
+      const employee = await storage.getEmployeeByUserId(req.user.id);
+      if (!employee) return res.status(404).json({ message: 'Employee profile not found' });
+      const records = await storage.getAttendanceByEmployee(employee.id);
+      res.json(records.slice(0, 10));
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to fetch attendance' });
+    }
+  });
+
+  app.get('/api/employee/payslips', requireAuth, async (req, res) => {
+    try {
+      const employee = await storage.getEmployeeByUserId(req.user.id);
+      if (!employee) return res.status(404).json({ message: 'Employee profile not found' });
+      const slips = await storage.getPayrollsByEmployee(employee.id);
+      res.json(slips.slice(0, 10));
+    } catch (e) {
+      res.status(500).json({ message: 'Failed to fetch payslips' });
     }
   });
 }

@@ -1,13 +1,16 @@
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { ErrorBoundary } from "@/components/layout/error-boundary";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/use-auth";
+import { Button } from "@/components/ui/button";
 import { ProtectedRoute } from "./lib/protected-route";
 import NotFound from "@/pages/not-found.jsx";
 import HomePage from "@/pages/home-page";
-import AuthPage from "@/pages/auth-page.jsx";
+import LoginPage from "@/pages/login.jsx";
+import RegisterPage from "@/pages/register.jsx";
 import AdminDashboard from "@/pages/admin-dashboard.jsx";
 import EmployeeDashboard from "@/pages/employee-dashboard.jsx";
 import EmployeeList from "@/pages/employees/employee-list.jsx";
@@ -18,7 +21,7 @@ import AddPayroll from "@/pages/payroll/add-payroll.jsx";
 import EditPayroll from "@/pages/payroll/edit-payroll.jsx";
 import LeaveRequests from "@/pages/leaves/leave-requests.jsx";
 import ApplyLeave from "@/pages/leaves/apply-leave.jsx";
-import AttendancePage from "@/pages/attendance.jsx";
+import AttendanceRoute from "@/pages/AttendanceRoute.jsx";
 import Profile from "@/pages/profile.jsx";
 import Reports from "@/pages/reports.jsx";
 
@@ -26,7 +29,8 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={HomePage} />
-      <Route path="/auth" component={AuthPage} />
+  <Route path="/login" component={LoginPage} />
+  <Route path="/register" component={RegisterPage} />
       <ProtectedRoute path="/admin" component={AdminDashboard} />
       <ProtectedRoute path="/employee" component={EmployeeDashboard} />
       <ProtectedRoute path="/employees" component={EmployeeList} />
@@ -44,7 +48,7 @@ function Router() {
       }} />
       <ProtectedRoute path="/leaves" component={LeaveRequests} />
       <ProtectedRoute path="/leaves/apply" component={ApplyLeave} />
-      <ProtectedRoute path="/attendance" component={AttendancePage} />
+  <ProtectedRoute path="/attendance" component={AttendanceRoute} />
       <ProtectedRoute path="/profile" component={Profile} />
       <ProtectedRoute path="/reports" component={Reports} />
       <Route component={NotFound} />
@@ -57,8 +61,10 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <TooltipProvider>
-          <Toaster />
-          <Router />
+          <ErrorBoundary>
+            <Toaster />
+            <Router />
+          </ErrorBoundary>
         </TooltipProvider>
       </AuthProvider>
     </QueryClientProvider>
