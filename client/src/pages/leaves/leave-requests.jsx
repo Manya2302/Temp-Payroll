@@ -54,13 +54,14 @@ export default function LeaveRequests() {
       rejected: { variant: "secondary", icon: XCircle, className: "bg-red-100 text-red-800" },
     };
     
-    const config = statusConfig[status] || statusConfig.pending;
+    const safeStatus = status || 'pending';
+    const config = statusConfig[safeStatus] || statusConfig.pending;
     const IconComponent = config.icon;
     
     return (
       <Badge className={config.className}>
         <IconComponent className="w-3 h-3 mr-1" />
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+        {safeStatus.charAt(0).toUpperCase() + safeStatus.slice(1)}
       </Badge>
     );
   };
@@ -168,8 +169,8 @@ export default function LeaveRequests() {
                           </TableCell>
                         )}
                         <TableCell>
-                          <Badge className={getLeaveTypeColor(request.type)}>
-                            {request.type.charAt(0).toUpperCase() + request.type.slice(1)}
+                          <Badge className={getLeaveTypeColor(request.type || request.leaveType)}>
+                            {(request.type || request.leaveType || 'unknown').charAt(0).toUpperCase() + (request.type || request.leaveType || 'unknown').slice(1)}
                           </Badge>
                         </TableCell>
                         <TableCell>
