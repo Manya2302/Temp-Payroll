@@ -17,7 +17,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 const applyLeaveSchema = z.object({
-  type: z.enum(["vacation", "sick", "personal", "maternity", "paternity"]),
+  leaveType: z.enum(["vacation", "sick", "personal", "maternity", "paternity"]),
   startDate: z.date(),
   endDate: z.date(),
   days: z.number().min(1),
@@ -38,7 +38,7 @@ export default function ApplyLeave() {
   const form = useForm({
     resolver: zodResolver(applyLeaveSchema),
     defaultValues: {
-      type: "vacation",
+      leaveType: "vacation",
       startDate: new Date(),
       endDate: new Date(),
       days: 1,
@@ -138,7 +138,7 @@ export default function ApplyLeave() {
                 <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
                   <FormField
                     control={form.control}
-                    name="type"
+                    name="leaveType"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Leave Type</FormLabel>

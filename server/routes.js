@@ -198,14 +198,26 @@ export function createRoutes(app) {
         return res.status(404).json({ message: "Employee profile not found" });
       }
       
-      const validatedData = insertLeaveRequestSchema.parse({
+      console.log('[leave-request] Request body:', req.body);
+      console.log('[leave-request] Employee found:', { id: employee.id || employee._id });
+      
+      const requestData = {
         ...req.body,
-        employeeId: employee.id
-      });
+        employeeId: employee.id || employee._id
+      };
+      
+      console.log('[leave-request] Data to validate:', requestData);
+      
+      const validatedData = insertLeaveRequestSchema.parse(requestData);
       const request = await storage.createLeaveRequest(validatedData);
       res.status(201).json(request);
     } catch (error) {
-      res.status(400).json({ message: "Invalid leave request data" });
+      console.error('[leave-request] Validation error:', error);
+      res.status(400).json({ 
+        message: "Invalid leave request data", 
+        error: error.message,
+        details: error.errors || error
+      });
     }
   });
 
