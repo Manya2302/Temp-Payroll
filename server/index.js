@@ -1,4 +1,5 @@
 import express from "express";
+import "./db.js"; // Initialize MongoDB connection first
 import { setupAuth } from "./auth.js";
 import { createRoutes } from "./routes.js";
 import { log } from "./log.js";

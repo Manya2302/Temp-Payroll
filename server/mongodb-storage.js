@@ -1,6 +1,7 @@
 import { 
   User, Employee, Payroll, LeaveRequest, Attendance
 } from "../shared/mongoose-schema.js";
+import mongoose from "mongoose";
 import session from "express-session";
 import MongoStore from "connect-mongo";
 
@@ -10,7 +11,7 @@ export class DatabaseStorage {
       throw new Error('MONGODB_URL is missing. Add MONGODB_URL to your environment variables.');
     }
     this.sessionStore = MongoStore.create({
-      mongoUrl: process.env.MONGODB_URL,
+      client: mongoose.connection.getClient(),
       touchAfter: 24 * 3600 // lazy session update
     });
   }
