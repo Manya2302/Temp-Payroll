@@ -3,11 +3,12 @@ import { log } from './log.js';
 
 const connectMongoDB = async () => {
   try {
-    if (!process.env.MONGODB_URL) {
-      throw new Error('MONGODB_URL is missing. Add MONGODB_URL to your environment variables.');
-    }
+    // Use default MongoDB URL if MONGODB_URL is not set
+    const mongoUrl = process.env.MONGODB_URL || 'mongodb://localhost:27017/loco_payroll';
+    
+    log(`Attempting to connect to MongoDB at: ${mongoUrl.replace(/\/\/.*@/, '//***:***@')}`, 'db');
 
-    await mongoose.connect(process.env.MONGODB_URL, {
+    await mongoose.connect(mongoUrl, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       serverSelectionTimeoutMS: 10000,

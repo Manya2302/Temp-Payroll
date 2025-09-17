@@ -21,6 +21,20 @@ const userSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Add virtual id field for compatibility
+userSchema.virtual('id').get(function() {
+  return this._id.toHexString();
+});
+
+// Ensure virtual fields are serialized
+userSchema.set('toJSON', {
+  virtuals: true
+});
+
+userSchema.set('toObject', {
+  virtuals: true
+});
+
 // Employee Schema
 const employeeSchema = new mongoose.Schema({
   userId: {

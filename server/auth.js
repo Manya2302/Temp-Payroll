@@ -127,10 +127,24 @@ export function setupAuth(app) {
     }),
   );
 
-  passport.serializeUser((user, done) => done(null, user.id));
+  passport.serializeUser((user, done) => {
+    // Handle both _id and id fields for MongoDB compatibility
+    const userId = user._id || user.id;
+    if (!userId) {
+      console.error('[auth] Failed to serialize user - no ID found:', user);
+      return done(new Error('User ID not found'));
+    }
+    done(null, userId.toString());
+  });
+  
   passport.deserializeUser(async (id, done) => {
-    const user = await storage.getUser(id);
-    done(null, user);
+    try {
+      const user = await storage.getUser(id);
+      done(null, user);
+    } catch (error) {
+      console.error('[auth] Failed to deserialize user:', error);
+      done(error);
+    }
   });
 
   app.post("/api/register", async (req, res, next) => {
