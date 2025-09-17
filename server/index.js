@@ -3,6 +3,7 @@ import "./db.js"; // Initialize MongoDB connection first
 import { setupAuth } from "./auth.js";
 import { createRoutes } from "./routes.js";
 import { log } from "./log.js";
+import { seedDummyData } from "./seed-data.js";
 
 const app = express();
 
@@ -17,6 +18,14 @@ app.use('/api', (req, _res, next) => {
 
 setupAuth(app);
 createRoutes(app);
+
+// Seed dummy data after authentication setup
+(async () => {
+  // Wait a bit for auth setup to complete
+  setTimeout(async () => {
+    await seedDummyData();
+  }, 2000);
+})();
 
 if (process.env.NODE_ENV === "development") {
   const { setupVite } = await import("./vite-dev.js");
