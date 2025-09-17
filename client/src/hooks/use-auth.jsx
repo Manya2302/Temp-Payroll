@@ -3,7 +3,7 @@ import {
   useQuery,
   useMutation,
 } from "@tanstack/react-query";
-import { insertUserSchema } from "@shared/schema";
+import { insertUserSchema } from "@shared/mongoose-schema";
 import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 

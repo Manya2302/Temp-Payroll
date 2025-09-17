@@ -4,7 +4,7 @@ import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage.js";
-import { insertUserSchema } from "../shared/schema.js";
+import { insertUserSchema } from "../shared/mongoose-schema.js";
 
 const scryptAsync = promisify(scrypt);
 

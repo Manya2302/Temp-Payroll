@@ -4,7 +4,7 @@ import { storage } from "./storage.js";
 import { 
   insertEmployeeSchema, insertPayrollSchema, insertLeaveRequestSchema, 
   insertAttendanceSchema
-} from "../shared/schema.js";
+} from "../shared/mongoose-schema.js";
 
 function requireAuth(req, res, next) {
   if (!req.isAuthenticated()) {
