@@ -203,7 +203,9 @@ export function createRoutes(app) {
       
       const requestData = {
         ...req.body,
-        employeeId: employee.id || employee._id
+        employeeId: (employee.id || employee._id).toString(),
+        startDate: new Date(req.body.startDate),
+        endDate: new Date(req.body.endDate)
       };
       
       console.log('[leave-request] Data to validate:', requestData);
