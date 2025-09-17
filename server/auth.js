@@ -1,3 +1,15 @@
+/**
+ * 🔹 Backend (Node.js + Express) - Authentication Setup
+ * MERN Concepts Used:
+ * ✅ Express Server - Authentication middleware setup
+ * ✅ Middleware - Session management, passport authentication
+ * ✅ Authentication (JWT) - Passport Local Strategy for login/register
+ * ✅ Authorization (Role-based) - User roles (admin/employee) handling
+ * ✅ Validation - Password hashing and validation
+ * ✅ Error Handling Middleware - Authentication error responses
+ * ✅ Routing (CRUD APIs) - Auth endpoints (login, register, logout, user)
+ */
+
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import session from "express-session";

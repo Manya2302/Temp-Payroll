@@ -1,3 +1,15 @@
+/**
+ * 🔹 Frontend (React) - Tooltip UI Component System
+ * MERN Concepts Used:
+ * ✅ Components - Complete tooltip system (Provider, Trigger, Content)
+ * ✅ Props - Tooltip positioning and styling configuration props
+ * ✅ State (useState) - Tooltip visibility state management
+ * ✅ Event Handling - Hover and focus events for tooltip triggers
+ * ✅ Conditional Rendering - Tooltip content visibility
+ * ✅ Context API (for provider state) - Tooltip provider context
+ * ✅ Styling (CSS / Tailwind / Bootstrap) - Tooltip animations and positioning
+ */
+
 import * as React from "react"
 import * as TooltipPrimitive from "@radix-ui/react-tooltip"
 

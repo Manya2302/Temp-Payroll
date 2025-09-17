@@ -1,3 +1,20 @@
+/**
+ * 🔹 Frontend (React) - Profile Settings Component
+ * MERN Concepts Used:
+ * ✅ Components - Profile management with tabbed interface
+ * ✅ Props - Passing data to form components and layout
+ * ✅ State (useState) - Tab state management for profile vs password sections
+ * ✅ State with Object - Profile data object and separate form states
+ * ✅ useEffect - Loading profile data and populating forms
+ * ✅ Event Handling - Tab switching, form submissions, data updates
+ * ✅ Form Handling - Multiple forms (profile update, password change)
+ * ✅ Form Validation - Client-side validation using Zod schemas
+ * ✅ Conditional Rendering - Tab-based content rendering
+ * ✅ Context API (for auth state) - Using authentication context
+ * ✅ API Calls (fetch / axios) - GET profile data, PUT profile updates
+ * ✅ Styling (CSS / Tailwind / Bootstrap) - Tabbed interface and form styling
+ */
+
 import React, { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "@tanstack/react-query";

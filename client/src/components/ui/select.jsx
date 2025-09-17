@@ -1,3 +1,15 @@
+/**
+ * 🔹 Frontend (React) - Select UI Component System
+ * MERN Concepts Used:
+ * ✅ Components - Complete select dropdown system with trigger, content, items
+ * ✅ Props - Accepting position, className and other customization props
+ * ✅ Event Handling - Select option changes, dropdown open/close
+ * ✅ Form Handling - Used in forms for option selection
+ * ✅ Conditional Rendering - Dropdown content visibility, selected state
+ * ✅ List Rendering (map) - Rendering select options from arrays
+ * ✅ Styling (CSS / Tailwind / Bootstrap) - Complex dropdown styling and animations
+ */
+
 import * as React from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
 import { Check, ChevronDown, ChevronUp } from "lucide-react"

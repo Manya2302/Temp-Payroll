@@ -1,3 +1,19 @@
+/**
+ * 🔹 Frontend (React) - Login Page Component
+ * MERN Concepts Used:
+ * ✅ Components - Login form component structure
+ * ✅ State (useState) - Managing form input states (username, password)
+ * ✅ State with Object - Form state management
+ * ✅ useEffect - Redirecting user after successful login
+ * ✅ Event Handling - Form submission, input changes, toggle password visibility
+ * ✅ Form Handling - Login form processing
+ * ✅ Form Validation - Required field validation
+ * ✅ Conditional Rendering - Show/hide password, loading states
+ * ✅ Context API (for auth state) - Using authentication context
+ * ✅ React Router (Routes) - Navigation after login based on user role
+ * ✅ Styling (CSS / Tailwind / Bootstrap) - Form styling and layout
+ */
+
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';

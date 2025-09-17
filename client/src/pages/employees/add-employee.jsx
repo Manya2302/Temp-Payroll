@@ -1,3 +1,20 @@
+/**
+ * 🔹 Frontend (React) - Add Employee Component
+ * MERN Concepts Used:
+ * ✅ Components - Add employee form component
+ * ✅ Props - Passing data between components
+ * ✅ State (useState) - Form state management through react-hook-form
+ * ✅ State with Object - Complex form object state
+ * ✅ Event Handling - Form submission, input changes, navigation
+ * ✅ Form Handling - Complete form processing with validation
+ * ✅ Form Validation - Client-side validation using Zod schema
+ * ✅ Conditional Rendering - Role-based access control, loading states
+ * ✅ React Router (Routes) - Navigation after form submission
+ * ✅ Context API (for auth state) - Using authentication context
+ * ✅ API Calls (fetch / axios) - POST request to create employee
+ * ✅ Styling (CSS / Tailwind / Bootstrap) - Form layout and styling
+ */
+
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";

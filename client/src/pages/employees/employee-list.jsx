@@ -1,3 +1,21 @@
+/**
+ * 🔹 Frontend (React) - Employee List Component
+ * MERN Concepts Used:
+ * ✅ Components - Employee list table component
+ * ✅ Props - Passing data to child components
+ * ✅ State (useState) - Search term state management
+ * ✅ State with Array - Managing list of employees
+ * ✅ useEffect - Fetching employee data on component mount
+ * ✅ Event Handling - Search input, delete confirmation, edit navigation
+ * ✅ Form Handling - Search form functionality
+ * ✅ Conditional Rendering - Loading states, empty states, role-based access
+ * ✅ List Rendering (map) - Rendering employee table rows from array
+ * ✅ React Router (Routes, Dynamic Params) - Navigation to edit/add employee
+ * ✅ Context API (for auth state) - Using authentication for role checking
+ * ✅ API Calls (fetch / axios) - Fetching and deleting employee data
+ * ✅ Styling (CSS / Tailwind / Bootstrap) - Table and UI component styling
+ */
+
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "@tanstack/react-query";

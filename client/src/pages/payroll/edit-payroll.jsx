@@ -1,3 +1,21 @@
+/**
+ * 🔹 Frontend (React) - Edit Payroll Component
+ * MERN Concepts Used:
+ * ✅ Components - Payroll editing form with data loading
+ * ✅ Props - Dynamic route params for payroll ID
+ * ✅ State (useState) - Form state and real-time calculations
+ * ✅ State with Object - Payroll data object and form values
+ * ✅ useEffect - Loading payroll data and populating form
+ * ✅ Event Handling - Form submission, calculations, navigation
+ * ✅ Form Handling - Pre-populated edit form with validation
+ * ✅ Form Validation - Client-side validation using Zod schema
+ * ✅ Conditional Rendering - Loading states, error states, role-based access
+ * ✅ React Router (Routes, Dynamic Params) - Dynamic payroll ID routing
+ * ✅ Context API (for auth state) - Role-based access control
+ * ✅ API Calls (fetch / axios) - GET payroll data, PUT payroll update
+ * ✅ Styling (CSS / Tailwind / Bootstrap) - Form layout and responsive design
+ */
+
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";

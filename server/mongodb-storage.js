@@ -1,3 +1,15 @@
+/**
+ * 🔹 Backend (Node.js + Express) - MongoDB Storage Layer
+ * MERN Concepts Used:
+ * ✅ Express Server - Database operations layer for Express application
+ * ✅ Routing (CRUD APIs) - Database CRUD operations for all entities
+ * ✅ MongoDB Connection - Mongoose model operations and queries
+ * ✅ Validation - Data validation before database operations
+ * ✅ Error Handling Middleware - Database operation error handling
+ * ✅ Authentication (JWT) - Session storage configuration
+ * ✅ Query Parameters - Database filtering and pagination support
+ */
+
 import { 
   User, Employee, Payroll, LeaveRequest, Attendance
 } from "../shared/mongoose-schema.js";

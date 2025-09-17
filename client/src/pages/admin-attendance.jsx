@@ -1,3 +1,18 @@
+/**
+ * 🔹 Frontend (React) - Admin Attendance Summary Page
+ * MERN Concepts Used:
+ * ✅ Components - Admin attendance management interface
+ * ✅ Props - Table data and configuration props
+ * ✅ State (useState) - Period, status, search, and attendance data state
+ * ✅ State with Array - Attendance data array with filtering
+ * ✅ State with Object - Individual attendance record objects
+ * ✅ Event Handling - Search, filter, lock/unlock, and data processing
+ * ✅ Form Handling - Period selection and search input handling
+ * ✅ Conditional Rendering - Status indicators and action buttons
+ * ✅ List Rendering (map) - Rendering attendance table rows
+ * ✅ Styling (CSS / Tailwind / Bootstrap) - Data table layout and responsive design
+ */
+
 import React, { useState } from "react";
 import Layout from "@/components/layout/layout";
 import { Button } from "@/components/ui/button";

@@ -1,3 +1,20 @@
+/**
+ * 🔹 Frontend (React) - Attendance Tracking Component
+ * MERN Concepts Used:
+ * ✅ Components - Attendance tracking with real-time clock
+ * ✅ Props - Passing data to child components
+ * ✅ State (useState) - Current time state management
+ * ✅ State with Array - Attendance records array
+ * ✅ State with Object - Today's attendance object and individual records
+ * ✅ useEffect - Real-time clock updates, data fetching on component mount
+ * ✅ Event Handling - Check-in/check-out button clicks
+ * ✅ Conditional Rendering - Check-in vs check-out states, attendance history
+ * ✅ List Rendering (map) - Rendering attendance history table rows
+ * ✅ Context API (for auth state) - Using authentication context
+ * ✅ API Calls (fetch / axios) - Check-in, check-out, attendance data fetching
+ * ✅ Styling (CSS / Tailwind / Bootstrap) - Clock interface and table styling
+ */
+
 import React, { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "@tanstack/react-query";

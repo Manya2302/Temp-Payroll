@@ -1,3 +1,13 @@
+/**
+ * 🔹 Frontend (React) - Input UI Component
+ * MERN Concepts Used:
+ * ✅ Components - Reusable input component
+ * ✅ Props - Accepting type, className and other input props
+ * ✅ Event Handling - onChange, onFocus, onBlur events
+ * ✅ Form Handling - Input field for forms
+ * ✅ Styling (CSS / Tailwind / Bootstrap) - Consistent input styling
+ */
+
 import * as React from "react"
 
 import { cn } from "@/lib/utils"

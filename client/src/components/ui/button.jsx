@@ -1,3 +1,13 @@
+/**
+ * 🔹 Frontend (React) - Button UI Component
+ * MERN Concepts Used:
+ * ✅ Components - Reusable button component with variants
+ * ✅ Props - Accepting variant, size, className and other props
+ * ✅ Event Handling - onClick and other button event handlers
+ * ✅ Conditional Rendering - Different button styles based on variant/size props
+ * ✅ Styling (CSS / Tailwind / Bootstrap) - Dynamic styling with class variants
+ */
+
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva } from "class-variance-authority"

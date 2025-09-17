@@ -1,3 +1,22 @@
+/**
+ * 🔹 Frontend (React) - Leave Requests Management Component
+ * MERN Concepts Used:
+ * ✅ Components - Leave request management table component
+ * ✅ Props - Passing data to child components
+ * ✅ State (useState) - Filter state management
+ * ✅ State with Array - Managing leave requests array
+ * ✅ State with Object - Leave request objects with status, dates, employee info
+ * ✅ useEffect - Data fetching via useQuery on component mount
+ * ✅ Event Handling - Filter changes, status updates, navigation
+ * ✅ Form Handling - Status update form processing
+ * ✅ Conditional Rendering - Role-based UI, status-based actions, empty states
+ * ✅ List Rendering (map) - Rendering leave request table rows from array
+ * ✅ React Router (Routes) - Navigation to apply leave form
+ * ✅ Context API (for auth state) - Using authentication for role checking
+ * ✅ API Calls (fetch / axios) - Fetching leave requests, updating status
+ * ✅ Styling (CSS / Tailwind / Bootstrap) - Table styling, status badges, responsive design
+ */
+
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";

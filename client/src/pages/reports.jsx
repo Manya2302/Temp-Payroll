@@ -1,3 +1,20 @@
+/**
+ * 🔹 Frontend (React) - Reports & Analytics Component
+ * MERN Concepts Used:
+ * ✅ Components - Dashboard with analytics, charts, and reports
+ * ✅ Props - Passing data to charts and table components
+ * ✅ State (useState) - Report type and date range selection state
+ * ✅ State with Array - Reports data arrays for tables
+ * ✅ State with Object - Summary statistics object
+ * ✅ useEffect - Data fetching on filter changes
+ * ✅ Event Handling - Tab switching, date range selection, export functions
+ * ✅ Conditional Rendering - Different report types, access control, data states
+ * ✅ List Rendering (map) - Rendering report data in tables
+ * ✅ Context API (for auth state) - Role-based access control
+ * ✅ API Calls (fetch / axios) - Multiple report data endpoints
+ * ✅ Styling (CSS / Tailwind / Bootstrap) - Dashboard layout and responsive tables
+ */
+
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";

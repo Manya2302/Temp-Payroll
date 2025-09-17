@@ -1,3 +1,12 @@
+/**
+ * 🔹 Backend (Node.js + Express) - MongoDB Connection Setup
+ * MERN Concepts Used:
+ * ✅ Express Server - Database connection for Express application
+ * ✅ MongoDB Connection - Mongoose connection setup and configuration
+ * ✅ Error Handling Middleware - Connection error handling and retry logic
+ * ✅ Validation - Connection validation and health checks
+ */
+
 import mongoose from 'mongoose';
 import { log } from './log.js';
 

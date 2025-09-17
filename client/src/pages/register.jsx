@@ -1,3 +1,19 @@
+/**
+ * 🔹 Frontend (React) - Registration Page Component  
+ * MERN Concepts Used:
+ * ✅ Components - Registration form component structure
+ * ✅ State (useState) - Managing form inputs (username, password, role)
+ * ✅ State with Object - Form state management 
+ * ✅ useEffect - Form cleanup and initialization
+ * ✅ Event Handling - Form submission, input changes, password visibility toggle
+ * ✅ Form Handling - User registration form processing
+ * ✅ Form Validation - Client-side form validation (required fields, min length)
+ * ✅ Conditional Rendering - Show/hide password, loading states
+ * ✅ Context API (for auth state) - Using authentication context for registration
+ * ✅ React Router (Routes) - Navigation after successful registration
+ * ✅ Styling (CSS / Tailwind / Bootstrap) - Form styling and layout
+ */
+
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';

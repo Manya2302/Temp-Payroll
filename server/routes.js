@@ -1,3 +1,17 @@
+/**
+ * 🔹 Backend (Node.js + Express) - API Routes
+ * MERN Concepts Used:
+ * ✅ Express Server - API route definitions
+ * ✅ Routing (CRUD APIs) - GET, POST, PUT, DELETE operations for all entities
+ * ✅ Middleware - Authentication and authorization middleware
+ * ✅ Authentication (JWT) - Session-based authentication checks
+ * ✅ Authorization (Role-based) - Admin vs Employee access control
+ * ✅ Validation - Input validation using schemas
+ * ✅ Query Parameters - Filtering and pagination support
+ * ✅ Route Parameters - Dynamic route handling (/api/employees/:id)
+ * ✅ Error Handling Middleware - Consistent API error responses
+ */
+
 import { createServer } from "http";
 import { setupAuth } from "./auth.js";
 import { storage } from "./storage.js";

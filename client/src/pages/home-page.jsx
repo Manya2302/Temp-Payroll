@@ -1,3 +1,18 @@
+/**
+ * 🔹 Frontend (React) - Landing Page Component
+ * MERN Concepts Used:
+ * ✅ Components - Landing page with navigation, hero, features, testimonials
+ * ✅ Props - Passing data to child components (cards, buttons)
+ * ✅ State (useState) - No explicit state but manages auth redirect logic
+ * ✅ useEffect - Automatic redirect based on authentication status
+ * ✅ Event Handling - Navigation clicks, CTA button interactions
+ * ✅ Conditional Rendering - Show loading or redirect based on auth state
+ * ✅ List Rendering (map) - Rendering feature cards from data arrays
+ * ✅ React Router (Routes) - Navigation links and programmatic redirects
+ * ✅ Context API (for auth state) - Using authentication for redirect logic
+ * ✅ Styling (CSS / Tailwind / Bootstrap) - Marketing page layout and animations
+ */
+
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation, Link } from "wouter";
 import { Calculator, Users, DollarSign, Calendar, BarChart3, Shield, Clock, FileText, ArrowRight, CheckCircle, Play } from "lucide-react";

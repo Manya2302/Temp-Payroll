@@ -1,3 +1,12 @@
+/**
+ * 🔹 Frontend (React) - Badge UI Component
+ * MERN Concepts Used:
+ * ✅ Components - Reusable badge component for status indicators
+ * ✅ Props - Accepting variant, className and other props
+ * ✅ Conditional Rendering - Different badge styles based on variant prop
+ * ✅ Styling (CSS / Tailwind / Bootstrap) - Dynamic styling with class variants
+ */
+
 import * as React from "react"
 import { cva } from "class-variance-authority"
 

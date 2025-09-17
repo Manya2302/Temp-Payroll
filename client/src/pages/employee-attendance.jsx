@@ -1,3 +1,16 @@
+/**
+ * 🔹 Frontend (React) - Employee Attendance Summary Page
+ * MERN Concepts Used:
+ * ✅ Components - Employee attendance viewing interface
+ * ✅ Props - Attendance data and table configuration props
+ * ✅ State (useState) - Attendance summary state management
+ * ✅ State with Object - Attendance data object with multiple metrics
+ * ✅ Conditional Rendering - Data display based on availability
+ * ✅ List Rendering (map) - Rendering attendance metrics in table
+ * ✅ Context API (for auth state) - User authentication context
+ * ✅ Styling (CSS / Tailwind / Bootstrap) - Summary card and table layout
+ */
+
 import React from "react";
 import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";

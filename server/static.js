@@ -1,3 +1,12 @@
+/**
+ * 🔹 Backend (Node.js + Express) - Static File Serving
+ * MERN Concepts Used:
+ * ✅ Express Server - Static file serving for production builds
+ * ✅ Middleware - Static file middleware configuration
+ * ✅ Routing (CRUD APIs) - Catch-all route for SPA support
+ * ✅ Error Handling Middleware - Build directory validation
+ */
+
 import express from 'express';
 import fs from 'fs';
 import path from 'path';

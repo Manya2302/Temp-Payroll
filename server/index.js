@@ -1,3 +1,16 @@
+/**
+ * 🔹 Backend (Node.js + Express) - Main Server File
+ * MERN Concepts Used:
+ * ✅ Express Server - Creating and configuring Express application
+ * ✅ Middleware - JSON parsing, URL encoding, logging, error handling
+ * ✅ Routing (CRUD APIs) - Setting up API routes for all endpoints
+ * ✅ Authentication (JWT) - Session-based authentication setup
+ * ✅ Error Handling Middleware - Global error handler for API endpoints
+ * ✅ Validation - Request validation middleware
+ * ✅ Route Parameters - Dynamic route handling
+ * ✅ Query Parameters - URL parameter processing
+ */
+
 import express from "express";
 import "./db.js"; // Initialize MongoDB connection first
 import { setupAuth } from "./auth.js";

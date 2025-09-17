@@ -1,3 +1,19 @@
+/**
+ * 🔹 Frontend (React) - Main Layout Component
+ * MERN Concepts Used:
+ * ✅ Components - Layout wrapper component with navigation
+ * ✅ Props - Children prop for page content
+ * ✅ State (useState) - Sidebar open/close state management
+ * ✅ State with Array - Navigation items array
+ * ✅ State with Object - Navigation item objects with properties
+ * ✅ Event Handling - Sidebar toggle, navigation clicks, logout
+ * ✅ Conditional Rendering - Role-based navigation, mobile/desktop views
+ * ✅ List Rendering (map) - Rendering navigation items from array
+ * ✅ React Router (Routes) - Navigation links and current route detection
+ * ✅ Context API (for auth state) - Using authentication context
+ * ✅ Styling (CSS / Tailwind / Bootstrap) - Responsive layout and styling
+ */
+
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
