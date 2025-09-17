@@ -111,7 +111,7 @@ export class DatabaseStorage {
       await employee.save();
       return employee.toObject();
     } catch (error) {
-      console.error('Error creating employee:', error);
+  // console.error('Error creating employee:', error); // log removed
       throw error;
     }
   }

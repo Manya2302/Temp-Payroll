@@ -7,7 +7,7 @@
  * ✅ Conditional Rendering - Protected routes based on auth state
  * ✅ Styling (CSS / Tailwind / Bootstrap) - UI styling with components
  */
-
+import { ProtectedRoute } from './lib/protected-route';
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -15,7 +15,7 @@ import { ErrorBoundary } from "@/components/layout/error-boundary";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/use-auth";
-import { ProtectedRoute } from "./lib/protected-route";
+// Removed duplicate and incorrect import
 import NotFound from "@/pages/not-found.jsx";
 import HomePage from "@/pages/home-page";
 import LoginPage from "@/pages/login.jsx";
