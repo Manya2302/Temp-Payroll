@@ -13,14 +13,26 @@ import {
   X,
   Clock,
   IndianRupee,
-  Mail // <-- Add this import
+  Mail, // <-- Add this import
+  Moon, // Add these icons
+  Sun
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Layout({ children }) {
   const { user, logoutMutation } = useAuth();
   const [location] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  // Read initial theme from localStorage (default: false)
+  const [darkMode, setDarkMode] = useState(() => {
+    const stored = localStorage.getItem("theme");
+    return stored === "dark";
+  });
+
+  useEffect(() => {
+    document.body.classList.toggle("dark", darkMode);
+    localStorage.setItem("theme", darkMode ? "dark" : "light");
+  }, [darkMode]);
 
   const isAdmin = user?.role === 'admin';
 
@@ -80,15 +92,15 @@ export default function Layout({ children }) {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-900 shadow-lg transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
         <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <Calculator className="text-white h-4 w-4" />
             </div>
-            <span className="text-xl font-bold text-gray-900">Loco</span>
+            <span className="text-xl font-bold text-gray-900 dark:text-gray-100">Loco</span>
           </div>
           <Button
             variant="ghost"
@@ -109,7 +121,7 @@ export default function Layout({ children }) {
                   className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ${
                     item.current
                       ? 'bg-primary text-white'
-                      : 'text-gray-700 hover:bg-gray-100'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                   }`}
                   onClick={() => setSidebarOpen(false)}
                 >
@@ -122,14 +134,14 @@ export default function Layout({ children }) {
         </nav>
         
         <div className="absolute bottom-4 left-4 right-4">
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                 <User className="text-white h-4 w-4" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-900">{user?.username}</p>
-                <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{user?.username}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{user?.role}</p>
               </div>
             </div>
             <Button
@@ -141,6 +153,25 @@ export default function Layout({ children }) {
               <LogOut className="h-4 w-4" />
             </Button>
           </div>
+          {/* Theme toggle button */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full mt-2"
+            onClick={() => setDarkMode((prev) => !prev)}
+          >
+            {darkMode ? (
+              <>
+                <Sun className="w-4 h-4 mr-2 text-yellow-400" />
+                Switch to Light Theme
+              </>
+            ) : (
+              <>
+                <Moon className="w-4 h-4 mr-2 text-gray-700" />
+                Switch to Dark Theme
+              </>
+            )}
+          </Button>
         </div>
       </div>
       

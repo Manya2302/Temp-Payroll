@@ -25,7 +25,7 @@ export default function AdminAttendancePage() {
 
   return (
     <Layout>
-      <div className="bg-white p-4 rounded shadow mb-4">
+      <div className="p-4 rounded shadow mb-4">
         <div className="flex gap-4 items-center border-b pb-2 mb-2">
           <div className="flex gap-2">
             <Button variant="outline" className="px-3 py-1 text-xs font-semibold text-blue-700 border-blue-700">Attendance Summary</Button>

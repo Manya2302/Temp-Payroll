@@ -30,7 +30,7 @@ export default function QueryAnswer() {
   if (!query) return (
     <Layout>
       <div className="flex items-center justify-center min-h-[300px]">
-        <div className="text-gray-500">Loading...</div>
+        <div className="text-gray-500 dark:text-gray-400">Loading...</div>
       </div>
     </Layout>
   );
@@ -40,15 +40,15 @@ export default function QueryAnswer() {
       <div className="max-w-xl mx-auto mt-8">
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl text-primary">Answer Query</CardTitle>
+            <CardTitle className="text-2xl text-primary dark:text-blue-300">Answer Query</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="mb-2"><b>Name:</b> {query.name}</div>
-            <div className="mb-2"><b>Email:</b> {query.email}</div>
-            <div className="mb-4"><b>Query:</b> {query.message}</div>
+            <div className="mb-2 text-gray-900 dark:text-gray-100"><b>Name:</b> {query.name}</div>
+            <div className="mb-2 text-gray-900 dark:text-gray-100"><b>Email:</b> {query.email}</div>
+            <div className="mb-4 text-gray-900 dark:text-gray-100"><b>Query:</b> {query.message}</div>
             <form onSubmit={handleSubmit}>
               <textarea
-                className="w-full border rounded p-2 mb-4"
+                className="w-full border rounded p-2 mb-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                 placeholder="Type your answer here..."
                 value={answer}
                 onChange={e => setAnswer(e.target.value)}
@@ -57,13 +57,13 @@ export default function QueryAnswer() {
               />
               <Button
                 type="submit"
-                className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90"
+                className="bg-primary text-white px-4 py-2 rounded"
               >
                 Submit
               </Button>
             </form>
             {submitted && (
-              <div className="mt-4 text-green-600 font-semibold">
+              <div className="mt-4 text-green-600 dark:text-green-400 font-semibold">
                 Answer submitted and email sent!
               </div>
             )}
