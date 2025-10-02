@@ -1,16 +1,4 @@
-/**
- * 🔹 Frontend (React) - Form UI Component System
- * MERN Concepts Used:
- * ✅ Components - Complete form component system (Form, Field, Label, Control, Message)
- * ✅ Props - Accepting field configuration and validation props
- * ✅ State (useState) - Form state managed through react-hook-form integration
- * ✅ useEffect - Form field state monitoring and error handling
- * ✅ Event Handling - Form field changes and validation events
- * ✅ Form Handling - Advanced form control with validation and error display
- * ✅ Form Validation - Error state management and display
- * ✅ Context API (for form state) - Form context provider for field communication
- * ✅ Styling (CSS / Tailwind / Bootstrap) - Form styling with error states
- */
+
 
 import * as React from "react"
 import * as LabelPrimitive from "@radix-ui/react-label"

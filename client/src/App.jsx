@@ -1,12 +1,3 @@
-/**
- * 🔹 Frontend (React) - Main App Component
- * MERN Concepts Used:
- * ✅ Components - Main App component structure
- * ✅ React Router (Routes, Dynamic Params) - Navigation between pages
- * ✅ Context API (for auth state) - AuthProvider for authentication
- * ✅ Conditional Rendering - Protected routes based on auth state
- * ✅ Styling (CSS / Tailwind / Bootstrap) - UI styling with components
- */
 import { ProtectedRoute } from './lib/protected-route';
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
@@ -15,7 +6,6 @@ import { ErrorBoundary } from "@/components/layout/error-boundary";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/use-auth";
-// Removed duplicate and incorrect import
 import NotFound from "@/pages/not-found.jsx";
 import HomePage from "@/pages/home-page";
 import LoginPage from "@/pages/login.jsx";
@@ -23,6 +13,8 @@ import RegisterPage from "@/pages/register.jsx";
 import AdminDashboard from "@/pages/admin-dashboard.jsx";
 import EmployeeDashboard from "@/pages/employee-dashboard.jsx";
 import EmployeeList from "@/pages/employees/employee-list.jsx";
+import AdminQueries from "./pages/admin-queries";
+import QueryAnswer from "./pages/query_answer";
 import AddEmployee from "@/pages/employees/add-employee.jsx";
 import EditEmployee from "@/pages/employees/edit-employee.jsx";
 import PayrollList from "@/pages/payroll/payroll-list.jsx";
@@ -30,7 +22,9 @@ import AddPayroll from "@/pages/payroll/add-payroll.jsx";
 import EditPayroll from "@/pages/payroll/edit-payroll.jsx";
 import LeaveRequests from "@/pages/leaves/leave-requests.jsx";
 import ApplyLeave from "@/pages/leaves/apply-leave.jsx";
+import HelpUs from './pages/help_us.jsx';
 import AttendanceRoute from "@/pages/AttendanceRoute.jsx";
+import ForgotPasswordPage from "@/pages/forgot-password";
 import Profile from "@/pages/profile.jsx";
 import Reports from "@/pages/reports.jsx";
 
@@ -40,8 +34,12 @@ function Router() {
       <Route path="/" component={HomePage} />
   <Route path="/login" component={LoginPage} />
   <Route path="/register" component={RegisterPage} />
+  <Route path="/forgot-password" component={ForgotPasswordPage} />
+  <Route path="/help" component={HelpUs} />
       <ProtectedRoute path="/admin" component={AdminDashboard} />
       <ProtectedRoute path="/employee" component={EmployeeDashboard} />
+      <ProtectedRoute path="/admin/queries" component={AdminQueries} />
+      <ProtectedRoute path="/admin/query/:id/answer" component={QueryAnswer} />
       <ProtectedRoute path="/employees" component={EmployeeList} />
       <ProtectedRoute path="/employees/add" component={AddEmployee} />
       <ProtectedRoute path="/employees/edit/:id" component={() => {

@@ -1,34 +1,17 @@
-/**
- * 🔹 Frontend (React) - Profile Settings Component
- * MERN Concepts Used:
- * ✅ Components - Profile management with tabbed interface
- * ✅ Props - Passing data to form components and layout
- * ✅ State (useState) - Tab state management for profile vs password sections
- * ✅ State with Object - Profile data object and separate form states
- * ✅ useEffect - Loading profile data and populating forms
- * ✅ Event Handling - Tab switching, form submissions, data updates
- * ✅ Form Handling - Multiple forms (profile update, password change)
- * ✅ Form Validation - Client-side validation using Zod schemas
- * ✅ Conditional Rendering - Tab-based content rendering
- * ✅ Context API (for auth state) - Using authentication context
- * ✅ API Calls (fetch / axios) - GET profile data, PUT profile updates
- * ✅ Styling (CSS / Tailwind / Bootstrap) - Tabbed interface and form styling
- */
-
-import React, { useState } from "react";
-import { useAuth } from "@/hooks/use-auth";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { User, Key, Save } from "lucide-react";
-import Layout from "@/components/layout/layout";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
+import Layout from "@/components/layout/layout";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { User, Key, Save } from "lucide-react";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 
 const profileSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -51,10 +34,13 @@ export default function Profile() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("profile");
 
+  // Fetch profile data from Employee table
   const { data: profile, isLoading } = useQuery({
     queryKey: ["/api/profile"],
+    queryFn: async () => await apiRequest("GET", "/api/profile"),
   });
 
+  // Profile form
   const profileForm = useForm({
     resolver: zodResolver(profileSchema),
     defaultValues: {
@@ -65,6 +51,7 @@ export default function Profile() {
     },
   });
 
+  // Password form
   const passwordForm = useForm({
     resolver: zodResolver(passwordSchema),
     defaultValues: {
@@ -74,8 +61,8 @@ export default function Profile() {
     },
   });
 
-  // Update form when profile data loads
-  React.useEffect(() => {
+  // Fill form with profile data from DB
+  useEffect(() => {
     if (profile) {
       profileForm.reset({
         firstName: profile.firstName || "",
@@ -86,10 +73,10 @@ export default function Profile() {
     }
   }, [profile, profileForm]);
 
+  // Update profile mutation
   const updateProfileMutation = useMutation({
     mutationFn: async (data) => {
-      const response = await apiRequest("PUT", "/api/profile", data);
-      return response.json();
+      return await apiRequest("PUT", "/api/profile", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
@@ -107,14 +94,21 @@ export default function Profile() {
     },
   });
 
-  // Password change endpoint not implemented on server yet.
+  // Change password mutation
   const changePasswordMutation = useMutation({
-    mutationFn: async () => {
-      throw new Error("Password change not available");
+    mutationFn: async (data) => {
+      return await apiRequest("PUT", "/api/profile/password", data);
+    },
+    onSuccess: () => {
+      passwordForm.reset();
+      toast({
+        title: "Success",
+        description: "Password changed successfully",
+      });
     },
     onError: (error) => {
       toast({
-        title: "Not Implemented",
+        title: "Error",
         description: error.message,
         variant: "destructive",
       });

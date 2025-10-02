@@ -1,19 +1,4 @@
-/**
- * 🔹 Frontend (React) - Admin Dashboard Component
- * MERN Concepts Used:
- * ✅ Components - Dashboard main component with sub-components
- * ✅ Props - Passing data to chart components
- * ✅ State (useState) - Managing dashboard data through useQuery
- * ✅ State with Array - Managing stats data and activity arrays
- * ✅ State with Object - Complex dashboard statistics object
- * ✅ useEffect - Data fetching on component mount via useQuery
- * ✅ Event Handling - Navigation clicks, card interactions
- * ✅ Conditional Rendering - Loading states, error states, role-based access
- * ✅ List Rendering (map) - Rendering quick action cards and activity items
- * ✅ Context API (for auth state) - Using authentication context
- * ✅ API Calls (fetch / axios) - Fetching dashboard stats and activity data
- * ✅ Styling (CSS / Tailwind / Bootstrap) - Dashboard layout and card styling
- */
+
 
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
@@ -194,7 +179,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Recent Activity */}
-        <Card>
+        {/*<Card>
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
             <CardDescription>Latest actions in your organization</CardDescription>
@@ -224,6 +209,7 @@ export default function AdminDashboard() {
             </div>
           </CardContent>
         </Card>
+        */}
   </div>
     </Layout>
   );

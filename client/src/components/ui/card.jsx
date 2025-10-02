@@ -1,10 +1,4 @@
-/**
- * 🔹 Frontend (React) - Card UI Components
- * MERN Concepts Used:
- * ✅ Components - Reusable card component system with header, content, footer
- * ✅ Props - Accepting className and other props for customization
- * ✅ Styling (CSS / Tailwind / Bootstrap) - Consistent card styling across app
- */
+
 
 import * as React from "react"
 

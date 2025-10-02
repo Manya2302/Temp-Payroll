@@ -1,13 +1,4 @@
-/**
- * 🔹 Frontend (React) - Protected Route Component
- * MERN Concepts Used:
- * ✅ Components - Route protection wrapper component
- * ✅ Props - Component and path props for route configuration
- * ✅ Conditional Rendering - Show component only if authenticated
- * ✅ React Router (Routes) - Route protection and navigation
- * ✅ Context API (for auth state) - Using authentication context
- * ✅ Authorization (Role-based) - User authentication checking
- */
+
 
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";

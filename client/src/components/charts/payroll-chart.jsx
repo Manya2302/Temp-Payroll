@@ -1,13 +1,4 @@
-/**
- * 🔹 Frontend (React) - Payroll Chart Component
- * MERN Concepts Used:
- * ✅ Components - Reusable chart component
- * ✅ Props - Receiving chart configuration (could be enhanced)
- * ✅ State (useState) - Using useRef for chart instance management
- * ✅ useEffect - Chart initialization and cleanup on component mount/unmount
- * ✅ Event Handling - Chart interactions (hover, click)
- * ✅ Styling (CSS / Tailwind / Bootstrap) - Chart styling and responsive design
- */
+
 
 import { useEffect, useRef } from 'react';
 import { ensureChartRegistered } from '@/lib/chart';

@@ -1,20 +1,3 @@
-/**
- * 🔹 Frontend (React) - Attendance Tracking Component
- * MERN Concepts Used:
- * ✅ Components - Attendance tracking with real-time clock
- * ✅ Props - Passing data to child components
- * ✅ State (useState) - Current time state management
- * ✅ State with Array - Attendance records array
- * ✅ State with Object - Today's attendance object and individual records
- * ✅ useEffect - Real-time clock updates, data fetching on component mount
- * ✅ Event Handling - Check-in/check-out button clicks
- * ✅ Conditional Rendering - Check-in vs check-out states, attendance history
- * ✅ List Rendering (map) - Rendering attendance history table rows
- * ✅ Context API (for auth state) - Using authentication context
- * ✅ API Calls (fetch / axios) - Check-in, check-out, attendance data fetching
- * ✅ Styling (CSS / Tailwind / Bootstrap) - Clock interface and table styling
- */
-
 import React, { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -43,12 +26,11 @@ export default function AttendancePage() {
 
   const checkInMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/attendance/checkin");
-      return response.json();
+      return await apiRequest("POST", "/api/attendance/checkin", {});
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/attendance"] });
       queryClient.invalidateQueries({ queryKey: ["/api/attendance/today"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/attendance"] });
       toast({
         title: "Success",
         description: "Checked in successfully",
@@ -65,12 +47,11 @@ export default function AttendancePage() {
 
   const checkOutMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/attendance/checkout");
-      return response.json();
+      return await apiRequest("POST", "/api/attendance/checkout", {});
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/attendance"] });
       queryClient.invalidateQueries({ queryKey: ["/api/attendance/today"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/attendance"] });
       toast({
         title: "Success",
         description: "Checked out successfully",
@@ -151,7 +132,8 @@ export default function AttendancePage() {
                 </div>
                 
                 <div className="space-y-3">
-                  {!todayAttendance?.checkIn ? (
+                  {!todayAttendance ? (
+                    // No record for today → show Check In
                     <Button
                       onClick={handleCheckIn}
                       disabled={checkInMutation.isPending}
@@ -160,7 +142,8 @@ export default function AttendancePage() {
                       <CheckCircle className="w-4 h-4 mr-2" />
                       {checkInMutation.isPending ? "Checking In..." : "Check In"}
                     </Button>
-                  ) : !todayAttendance?.checkOut ? (
+                  ) : !todayAttendance.checkOut ? (
+                    // Checked in but not out → show Check Out
                     <Button
                       onClick={handleCheckOut}
                       disabled={checkOutMutation.isPending}
@@ -171,6 +154,7 @@ export default function AttendancePage() {
                       {checkOutMutation.isPending ? "Checking Out..." : "Check Out"}
                     </Button>
                   ) : (
+                    // Both done
                     <div className="text-center p-4 bg-gray-50 rounded-lg">
                       <p className="text-gray-600">You have completed today's attendance</p>
                     </div>
@@ -244,7 +228,7 @@ export default function AttendancePage() {
                   </TableHeader>
                   <TableBody>
                     {attendanceRecords.slice(0, 10).map((record) => (
-                      <TableRow key={record.id}>
+                      <TableRow key={record.id || record._id}>
                         <TableCell className="font-medium">
                           {format(new Date(record.date), 'MMM dd, yyyy')}
                         </TableCell>

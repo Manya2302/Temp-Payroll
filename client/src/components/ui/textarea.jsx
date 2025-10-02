@@ -1,11 +1,4 @@
-/**
- * 🔹 Frontend (React) - Textarea UI Component
- * MERN Concepts Used:
- * ✅ Components - Reusable textarea component for forms
- * ✅ Props - Accepting className and textarea configuration props
- * ✅ Form Handling - Used in forms for multi-line text input
- * ✅ Styling (CSS / Tailwind / Bootstrap) - Textarea styling with focus states
- */
+
 
 import * as React from "react"
 

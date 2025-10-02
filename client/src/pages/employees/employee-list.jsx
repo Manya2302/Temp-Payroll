@@ -1,24 +1,6 @@
-/**
- * 🔹 Frontend (React) - Employee List Component
- * MERN Concepts Used:
- * ✅ Components - Employee list table component
- * ✅ Props - Passing data to child components
- * ✅ State (useState) - Search term state management
- * ✅ State with Array - Managing list of employees
- * ✅ useEffect - Fetching employee data on component mount
- * ✅ Event Handling - Search input, delete confirmation, edit navigation
- * ✅ Form Handling - Search form functionality
- * ✅ Conditional Rendering - Loading states, empty states, role-based access
- * ✅ List Rendering (map) - Rendering employee table rows from array
- * ✅ React Router (Routes, Dynamic Params) - Navigation to edit/add employee
- * ✅ Context API (for auth state) - Using authentication for role checking
- * ✅ API Calls (fetch / axios) - Fetching and deleting employee data
- * ✅ Styling (CSS / Tailwind / Bootstrap) - Table and UI component styling
- */
-
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,29 +18,18 @@ export default function EmployeeList() {
   const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const { data: employees, isLoading } = useQuery({
+  const { data: employees = [] } = useQuery({
     queryKey: ["/api/employees"],
   });
 
-  const deleteEmployeeMutation = useMutation({
-    mutationFn: async (id) => {
-      await apiRequest("DELETE", `/api/employees/${id}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/employees"] });
-      toast({
-        title: "Success",
-        description: "Employee deleted successfully",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
+  const deleteMutation = useMutation({
+    mutationFn: (id) =>
+      fetch(`/api/employees/${id}`, { method: "DELETE" }).then((res) => {
+        if (!res.ok) throw new Error("Delete failed");
+      }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/employees"] }),
   });
 
   const filteredEmployees = employees?.filter(employee =>
@@ -70,7 +41,7 @@ export default function EmployeeList() {
 
   const handleDeleteEmployee = (id) => {
     if (confirm('Are you sure you want to delete this employee?')) {
-      deleteEmployeeMutation.mutate(id);
+      deleteMutation.mutate(id);
     }
   };
 
@@ -181,7 +152,7 @@ export default function EmployeeList() {
                               variant="outline"
                               className="text-red-600 border-red-600 hover:bg-red-50"
                               onClick={() => handleDeleteEmployee(employee.id)}
-                              disabled={deleteEmployeeMutation.isPending}
+                              disabled={deleteMutation.isPending}
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>

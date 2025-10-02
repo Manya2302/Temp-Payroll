@@ -1,13 +1,4 @@
-/**
- * 🔹 Frontend (React) - React Query Configuration
- * MERN Concepts Used:
- * ✅ Components - Global query client configuration
- * ✅ State (useState) - Server state management with React Query
- * ✅ useEffect - Data fetching and caching logic
- * ✅ API Calls (fetch / axios) - HTTP request wrapper functions
- * ✅ Error Handling Middleware - API error handling and response validation
- * ✅ Authentication (JWT) - Including credentials in requests
- */
+
 
 import { QueryClient } from "@tanstack/react-query";
 

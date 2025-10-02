@@ -1,12 +1,3 @@
-/**
- * 🔹 Frontend (React) - 404 Not Found Page
- * MERN Concepts Used:
- * ✅ Components - Error page with navigation options
- * ✅ Props - Passing data to UI components
- * ✅ Event Handling - Back button and navigation clicks
- * ✅ React Router (Routes) - Link navigation to home page
- * ✅ Styling (CSS / Tailwind / Bootstrap) - Centered error page layout
- */
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

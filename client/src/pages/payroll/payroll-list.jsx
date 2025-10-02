@@ -1,21 +1,4 @@
-/**
- * 🔹 Frontend (React) - Payroll List Component
- * MERN Concepts Used:
- * ✅ Components - Payroll management table component
- * ✅ Props - Passing data to child components and layout
- * ✅ State (useState) - Search term state management
- * ✅ State with Array - Managing payrolls and employees arrays
- * ✅ State with Object - Complex payroll and employee objects
- * ✅ useEffect - Data fetching via useQuery on component mount
- * ✅ Event Handling - Search input, delete confirmation, navigation clicks
- * ✅ Form Handling - Search functionality
- * ✅ Conditional Rendering - Role-based access, loading states, empty states
- * ✅ List Rendering (map) - Rendering payroll table rows from array
- * ✅ React Router (Routes, Dynamic Params) - Navigation to edit/add payroll
- * ✅ Context API (for auth state) - Using authentication for role checking
- * ✅ API Calls (fetch / axios) - Fetching and deleting payroll data
- * ✅ Styling (CSS / Tailwind / Bootstrap) - Table and UI styling
- */
+
 
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";

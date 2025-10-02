@@ -1,41 +1,100 @@
-/**
- * 🔹 Backend (Node.js + Express) - Authentication Setup
- * MERN Concepts Used:
- * ✅ Express Server - Authentication middleware setup
- * ✅ Middleware - Session management, passport authentication
- * ✅ Authentication (JWT) - Passport Local Strategy for login/register
- * ✅ Authorization (Role-based) - User roles (admin/employee) handling
- * ✅ Validation - Password hashing and validation
- * ✅ Error Handling Middleware - Authentication error responses
- * ✅ Routing (CRUD APIs) - Auth endpoints (login, register, logout, user)
- */
-
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import session from "express-session";
+import bcrypt from "bcrypt";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage.js";
 import { insertUserSchema } from "../shared/mongoose-schema.js";
+import nodemailer from "nodemailer";
 
 const scryptAsync = promisify(scrypt);
 
 async function hashPassword(password) {
-  const salt = randomBytes(16).toString("hex");
-  const buf = await scryptAsync(password, salt, 64);
-  return `${buf.toString("hex")}.${salt}`;
+  return await bcrypt.hash(password, 10);
 }
 
-async function comparePasswords(supplied, stored) {
-  // Legacy plaintext support: if no salt delimiter present treat stored as plain
-  if (!stored.includes('.')) {
-    return supplied === stored;
+export async function comparePasswords(suppliedPassword, storedHash) {
+  if (!storedHash || typeof storedHash !== "string") return false;
+  // Detect bcrypt hash format
+  if (storedHash.startsWith("$2b$") || storedHash.startsWith("$2a$")) {
+    return await bcrypt.compare(suppliedPassword, storedHash);
   }
-  const [hashed, salt] = stored.split(".");
-  if (!hashed || !salt) return false;
-  const hashedBuf = Buffer.from(hashed, "hex");
-  const suppliedBuf = await scryptAsync(supplied, salt, 64);
-  return timingSafeEqual(hashedBuf, suppliedBuf);
+  // Legacy scrypt hash support (optional, for old users)
+  const [hash, salt] = storedHash.split(".");
+  if (!hash || !salt) return false;
+  const buf = await scryptAsync(suppliedPassword, salt, 64);
+  return timingSafeEqual(Buffer.from(hash, "hex"), buf);
+}
+
+// Simple in-memory OTP store (for demo; use Redis/db for production)
+const otpStore = new Map(); // email -> { otp, expires, userData }
+const forgotOtpStore = new Map(); // email -> { otp, expires }
+
+function generateOTP() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+async function sendOTPEmail(email, otp) {
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+  await transporter.sendMail({
+    from: `"Loco Payroll" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: "Your Loco Payroll Verification Code",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto; border: 1px solid #eee; border-radius: 8px; padding: 24px;">
+        <h2 style="color: #2d3748; margin-bottom: 16px;">Loco Payroll Verification</h2>
+        <p>Dear User,</p>
+        <p>Thank you for registering with <strong>Loco Payroll</strong>.</p>
+        <p>Your One-Time Password (OTP) for account verification is:</p>
+        <div style="font-size: 2rem; font-weight: bold; letter-spacing: 4px; color: #2563eb; margin: 16px 0;">
+          ${otp}
+        </div>
+        <p>This code is valid for 5 minutes. <b>Do not share this OTP with anyone.</b> Our team will never ask for your OTP.</p>
+        <p>If you did not request this, please ignore this email.</p>
+        <hr style="margin: 24px 0;">
+        <p style="font-size: 0.9rem; color: #888;">Loco Payroll Team</p>
+      </div>
+    `,
+    text: `Your Loco Payroll OTP is: ${otp}\nThis code is valid for 5 minutes. Do not share it with anyone. Our team will never ask for your OTP.`,
+  });
+}
+
+async function sendForgotOTPEmail(email, otp) {
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+  await transporter.sendMail({
+    from: `"Loco Payroll" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: "Loco Payroll Password Reset OTP",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto; border: 1px solid #eee; border-radius: 8px; padding: 24px;">
+        <h2 style="color: #2d3748; margin-bottom: 16px;">Loco Payroll Password Reset</h2>
+        <p>Dear User,</p>
+        <p>You requested to reset your password for <strong>Loco Payroll</strong>.</p>
+        <p>Your One-Time Password (OTP) for password reset is:</p>
+        <div style="font-size: 2rem; font-weight: bold; letter-spacing: 4px; color: #2563eb; margin: 16px 0;">
+          ${otp}
+        </div>
+        <p>This code is valid for 5 minutes. <b>Do not share this OTP with anyone.</b> Our team will never ask for your OTP.</p>
+        <p>If you did not request this, please ignore this email.</p>
+        <hr style="margin: 24px 0;">
+        <p style="font-size: 0.9rem; color: #888;">Loco Payroll Team</p>
+      </div>
+    `,
+    text: `Your Loco Payroll password reset OTP is: ${otp}\nThis code is valid for 5 minutes. Do not share it with anyone. Our team will never ask for your OTP.`,
+  });
 }
 
 export function setupAuth(app) {
@@ -77,7 +136,6 @@ export function setupAuth(app) {
     new LocalStrategy(async (username, password, done) => {
       // Check hardcoded credentials first
       if (username === 'admin' && password === 'admin@123') {
-        // Create or get admin user
         let user = await storage.getUserByUsername(username);
         if (!user) {
           user = await storage.createUser({
@@ -90,7 +148,6 @@ export function setupAuth(app) {
       }
       
       if (username === 'emp' && password === 'emp@123') {
-        // Create or get employee user
         let user = await storage.getUserByUsername(username);
         if (!user) {
           user = await storage.createUser({
@@ -99,7 +156,6 @@ export function setupAuth(app) {
             role: 'employee'
           });
           
-          // Create employee profile if doesn't exist
           const existingEmployee = await storage.getEmployeeByUserId(user.id);
           if (!existingEmployee) {
             await storage.createEmployee({
@@ -131,7 +187,6 @@ export function setupAuth(app) {
           const updated = await storage.updateUserPassword(user.id, newHashed);
           return done(null, updated);
         } catch (e) {
-          // If upgrade fails still allow login this time
           return done(null, user);
         }
       }
@@ -140,7 +195,6 @@ export function setupAuth(app) {
   );
 
   passport.serializeUser((user, done) => {
-    // Handle both _id and id fields for MongoDB compatibility
     const userId = user._id || user.id;
     if (!userId) {
       console.error('[auth] Failed to serialize user - no ID found:', user);
@@ -152,6 +206,9 @@ export function setupAuth(app) {
   passport.deserializeUser(async (id, done) => {
     try {
       const user = await storage.getUser(id);
+      if (!user) {
+        return done(null, false);
+      }
       done(null, user);
     } catch (error) {
       console.error('[auth] Failed to deserialize user:', error);
@@ -159,35 +216,71 @@ export function setupAuth(app) {
     }
   });
 
-  app.post("/api/register", async (req, res, next) => {
-    try {
-      console.log('[auth] register attempt', req.body?.username, req.body?.role);
-      const validatedData = insertUserSchema.parse(req.body);
-      const existingUser = await storage.getUserByUsername(validatedData.username);
-      if (existingUser) {
-        return res.status(400).json({ message: "Username already exists" });
-      }
+  // Block direct registration endpoint
+  app.post("/api/register", (req, res) => {
+    res.status(404).json({ message: "Direct registration is disabled. Please use the OTP registration flow." });
+  });
 
+  // Request OTP for registration
+  app.post("/api/register/request-otp", async (req, res) => {
+    const { username, password, role, email } = req.body;
+    if (!username || !password || !role || !email) {
+      return res.status(400).json({ message: "Missing fields" });
+    }
+    const existingUser = await storage.getUserByUsername(username);
+    if (existingUser) {
+      return res.status(400).json({ message: "Username already exists" });
+    }
+    const otp = generateOTP();
+    otpStore.set(email, {
+      otp,
+      expires: Date.now() + 5 * 60 * 1000, // 5 min expiry
+      userData: { username, password, role, email }
+    });
+    try {
+      await sendOTPEmail(email, otp);
+      res.json({ message: "OTP sent to email" });
+    } catch (err) {
+      console.error("[auth] Failed to send OTP email:", err);
+      res.status(500).json({ message: "Failed to send OTP email" });
+    }
+  });
+
+  // Verify OTP and create user
+  app.post("/api/register/verify-otp", async (req, res, next) => {
+    const { email, otp } = req.body;
+    const record = otpStore.get(email);
+    if (!record || record.otp !== otp || Date.now() > record.expires) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+    otpStore.delete(email);
+    const { username, password, role } = record.userData;
+    try {
+      const validatedData = insertUserSchema.parse({ username, password, role, email });
       const user = await storage.createUser({
         ...validatedData,
-        password: await hashPassword(validatedData.password),
+        password: await hashPassword(password),
+        email,
       });
-
-      // Create employee profile for non-admin users
       if (user.role === 'employee') {
-        await storage.createEmployee({
-          userId: user.id,
-          firstName: validatedData.username,
-          lastName: 'User',
-          email: `${validatedData.username}@company.com`,
-          department: 'General',
-          position: 'Employee',
-          salary: '50000',
-          hireDate: new Date(),
-          status: 'active'
-        });
+        // Duplicate email check before creating employee
+        const existingEmployee = await storage.getEmployeeByEmail(email);
+        if (existingEmployee) {
+          console.warn(`[auth] Employee with email ${email} already exists.`);
+        } else {
+          await storage.createEmployee({
+            userId: user.id,
+            firstName: username,
+            lastName: 'User',
+            email,
+            department: 'General',
+            position: 'Employee',
+            salary: '50000',
+            hireDate: new Date(),
+            status: 'active'
+          });
+        }
       }
-
       req.login(user, (err) => {
         if (err) return next(err);
         res.status(201).json(user);
@@ -196,6 +289,85 @@ export function setupAuth(app) {
       console.error('[auth] register error', error);
       res.status(400).json({ message: "Invalid registration data" });
     }
+  });
+
+  // Resend OTP
+  app.post("/api/register/resend-otp", async (req, res) => {
+    const { email } = req.body;
+    const record = otpStore.get(email);
+    if (!record) return res.status(400).json({ message: "No OTP request found for this email" });
+    const otp = generateOTP();
+    record.otp = otp;
+    record.expires = Date.now() + 5 * 60 * 1000;
+    otpStore.set(email, record);
+    try {
+      await sendOTPEmail(email, otp);
+      res.json({ message: "OTP resent to email" });
+    } catch (err) {
+      console.error("[auth] Failed to resend OTP email:", err);
+      res.status(500).json({ message: "Failed to resend OTP email" });
+    }
+  });
+
+  // Forgot Password: Request OTP
+  app.post("/api/forgot-password/request-otp", async (req, res) => {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "Email required" });
+    const user = await storage.getUserByEmail(email);
+    if (!user) return res.status(400).json({ message: "Email not found" });
+
+    const otp = generateOTP();
+    forgotOtpStore.set(email, { otp, expires: Date.now() + 5 * 60 * 1000 });
+    try {
+      await sendForgotOTPEmail(email, otp);
+      res.json({ message: "OTP sent to email" });
+    } catch (err) {
+      console.error("[forgot-password] Failed to send OTP email:", err);
+      res.status(500).json({ message: "Failed to send OTP email" });
+    }
+  });
+
+  // Forgot Password: Verify OTP
+  app.post("/api/forgot-password/verify-otp", async (req, res) => {
+    const { email, otp } = req.body;
+    const record = forgotOtpStore.get(email);
+    if (!record || record.otp !== otp || Date.now() > record.expires) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+    res.json({ message: "OTP verified" });
+  });
+
+  // Forgot Password: Resend OTP
+  app.post("/api/forgot-password/resend-otp", async (req, res) => {
+    const { email } = req.body;
+    const user = await storage.getUserByEmail(email);
+    if (!user) return res.status(400).json({ message: "Email not found" });
+
+    const otp = generateOTP();
+    forgotOtpStore.set(email, { otp, expires: Date.now() + 5 * 60 * 1000 });
+    try {
+      await sendForgotOTPEmail(email, otp);
+      res.json({ message: "OTP resent to email" });
+    } catch (err) {
+      console.error("[forgot-password] Failed to resend OTP email:", err);
+      res.status(500).json({ message: "Failed to resend OTP email" });
+    }
+  });
+
+  // Forgot Password: Reset Password
+  app.post("/api/forgot-password/reset", async (req, res) => {
+    const { email, newPassword } = req.body;
+    const record = forgotOtpStore.get(email);
+    if (!record || Date.now() > record.expires) {
+      return res.status(400).json({ message: "OTP expired or not verified" });
+    }
+    const user = await storage.getUserByEmail(email);
+    if (!user) return res.status(400).json({ message: "User not found" });
+
+    const hashedPassword = await hashPassword(newPassword);
+    await storage.updateUserPassword(user.id || user._id, hashedPassword);
+    forgotOtpStore.delete(email);
+    res.json({ message: "Password reset successful" });
   });
 
   app.post("/api/login", (req, res, next) => {
@@ -212,16 +384,20 @@ export function setupAuth(app) {
     })(req, res, next);
   });
 
-  app.post("/api/logout", (req, res, next) => {
+  app.post("/api/logout", (req, res) => {
     req.logout((err) => {
-      if (err) return next(err);
-      res.sendStatus(200);
+      if (err) {
+        console.error('[auth] Logout error:', err);
+        return res.status(500).json({ message: 'Logout failed' });
+      }
+      res.status(200).json({ message: 'Logout successful' });
     });
   });
 
-  app.get("/api/user", (req, res) => {
-    console.log('[auth] /api/user session', req.session);
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    res.json(req.user);
+  app.get("/api/session", (req, res) => {
+    if (req.isAuthenticated()) {
+      return res.status(200).json(req.user);
+    }
+    res.status(401).json({ message: "Unauthorized" });
   });
 }

@@ -1,15 +1,4 @@
-/**
- * 🔹 Frontend (React) - Toast Notification Hook
- * MERN Concepts Used:
- * ✅ Components - Toast notification system
- * ✅ Props - Toast message configuration and actions
- * ✅ State (useState) - Toast queue and visibility state management
- * ✅ State with Array - Managing multiple toasts array
- * ✅ useEffect - Toast lifecycle management and cleanup
- * ✅ Event Handling - Toast actions (add, dismiss, update)
- * ✅ Conditional Rendering - Toast visibility and content rendering
- * ✅ Context API (for global state) - Global toast state management
- */
+
 
 import * as React from "react"
 

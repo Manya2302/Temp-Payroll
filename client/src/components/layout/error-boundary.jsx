@@ -1,14 +1,4 @@
-/**
- * 🔹 Frontend (React) - Error Boundary Component
- * MERN Concepts Used:
- * ✅ Components - Class-based error boundary component
- * ✅ Props - Error boundary wrapping child components
- * ✅ State (useState) - Error state management using class state
- * ✅ useEffect - Component lifecycle methods (componentDidCatch)
- * ✅ Event Handling - Error catching and page reload handling
- * ✅ Conditional Rendering - Error UI vs normal children rendering
- * ✅ Styling (CSS / Tailwind / Bootstrap) - Error message styling
- */
+
 
 import React from 'react';
 

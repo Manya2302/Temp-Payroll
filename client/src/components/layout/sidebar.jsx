@@ -1,17 +1,4 @@
-/**
- * 🔹 Frontend (React) - Sidebar Navigation Component
- * MERN Concepts Used:
- * ✅ Components - Navigation sidebar with responsive design
- * ✅ Props - Passing navigation data and user info
- * ✅ State (useState) - Mobile menu open/close state
- * ✅ State with Array - Navigation items array rendering
- * ✅ Event Handling - Menu toggles, logout, navigation clicks
- * ✅ Conditional Rendering - Mobile menu visibility, user role navigation
- * ✅ List Rendering (map) - Rendering navigation items from arrays
- * ✅ React Router (Routes) - Active route detection and navigation
- * ✅ Context API (for auth state) - User authentication and logout
- * ✅ Styling (CSS / Tailwind / Bootstrap) - Responsive sidebar with animations
- */
+
 
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
@@ -28,7 +15,8 @@ import {
   User, 
   LogOut, 
   Menu,
-  X 
+  X ,
+  Mail,
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -41,7 +29,7 @@ const navigation = {
     { name: 'Attendance', href: '/attendance', icon: Clock },
     { name: 'Reports', href: '/reports', icon: FileText },
     { name: 'Profile', href: '/profile', icon: User },
-  ],
+    { name: 'Queries', href: '/admin/queries', icon: Mail },  ],
   employee: [
     { name: 'Dashboard', href: '/employee', icon: Home },
     { name: 'Attendance', href: '/attendance', icon: Clock },

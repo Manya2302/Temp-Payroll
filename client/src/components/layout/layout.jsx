@@ -1,19 +1,3 @@
-/**
- * 🔹 Frontend (React) - Main Layout Component
- * MERN Concepts Used:
- * ✅ Components - Layout wrapper component with navigation
- * ✅ Props - Children prop for page content
- * ✅ State (useState) - Sidebar open/close state management
- * ✅ State with Array - Navigation items array
- * ✅ State with Object - Navigation item objects with properties
- * ✅ Event Handling - Sidebar toggle, navigation clicks, logout
- * ✅ Conditional Rendering - Role-based navigation, mobile/desktop views
- * ✅ List Rendering (map) - Rendering navigation items from array
- * ✅ React Router (Routes) - Navigation links and current route detection
- * ✅ Context API (for auth state) - Using authentication context
- * ✅ Styling (CSS / Tailwind / Bootstrap) - Responsive layout and styling
- */
-
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -21,14 +5,15 @@ import {
   Calculator, 
   LayoutDashboard, 
   Users, 
-  DollarSign, 
   Calendar, 
   FileText, 
   User, 
   LogOut,
   Menu,
   X,
-  Clock
+  Clock,
+  IndianRupee,
+  Mail // <-- Add this import
 } from "lucide-react";
 import { useState } from "react";
 
@@ -55,9 +40,9 @@ export default function Layout({ children }) {
       },
     ] : []),
     {
-      name: 'Payroll',
+      name: '  Payroll',
       href: '/payroll',
-      icon: DollarSign,
+      icon: IndianRupee,
       current: location.startsWith('/payroll'),
     },
     {
@@ -78,6 +63,12 @@ export default function Layout({ children }) {
         href: '/reports',
         icon: FileText,
         current: location === '/reports',
+      },
+      {
+        name: 'Queries', // <-- Add this block
+        href: '/admin/queries',
+        icon: Mail,
+        current: location === '/admin/queries',
       },
     ] : []),
     {

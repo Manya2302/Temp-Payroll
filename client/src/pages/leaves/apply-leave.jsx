@@ -1,20 +1,4 @@
-/**
- * 🔹 Frontend (React) - Apply Leave Form Component
- * MERN Concepts Used:
- * ✅ Components - Leave application form component
- * ✅ Props - Passing data to form fields and layout components
- * ✅ State (useState) - Form submission state, success state management
- * ✅ State with Object - Complex form object with leave details
- * ✅ useEffect - Date calculation and form value watching
- * ✅ Event Handling - Form submission, date changes, form reset
- * ✅ Form Handling - Complete leave request form with validation
- * ✅ Form Validation - Client-side validation using Zod schema
- * ✅ Conditional Rendering - Success state vs form state rendering
- * ✅ React Router (Routes) - Form submission navigation
- * ✅ Context API (for auth state) - Using authentication context
- * ✅ API Calls (fetch / axios) - POST request to submit leave application
- * ✅ Styling (CSS / Tailwind / Bootstrap) - Form layout and success page styling
- */
+
 
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";

@@ -1,11 +1,4 @@
-/**
- * 🔹 Frontend (React) - Table UI Components
- * MERN Concepts Used:
- * ✅ Components - Complete table component system (Table, Header, Body, Row, Cell)
- * ✅ Props - Accepting className and other props for customization
- * ✅ List Rendering (map) - Used by parent components to render table rows
- * ✅ Styling (CSS / Tailwind / Bootstrap) - Consistent table styling and responsive design
- */
+
 
 import * as React from "react"
 

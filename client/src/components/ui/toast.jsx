@@ -1,15 +1,5 @@
-/**
- * 🔹 Frontend (React) - Toast Notification UI Component System
- * MERN Concepts Used:
- * ✅ Components - Complete toast system (Provider, Viewport, Toast, Actions)
- * ✅ Props - Toast configuration and styling variant props
- * ✅ State (useState) - Toast visibility and queue management
- * ✅ useEffect - Toast lifecycle and auto-dismiss logic
- * ✅ Event Handling - Toast actions and dismissal events
- * ✅ Conditional Rendering - Toast visibility and variant styling
- * ✅ Context API (for global state) - Toast provider for global notifications
- * ✅ Styling (CSS / Tailwind / Bootstrap) - Toast animations and styling variants
- */
+
+
 
 import * as React from "react"
 import * as ToastPrimitives from "@radix-ui/react-toast"

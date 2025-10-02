@@ -1,20 +1,4 @@
-/**
- * 🔹 Frontend (React) - Employee Dashboard Component
- * MERN Concepts Used:
- * ✅ Components - Employee dashboard with multiple sub-components
- * ✅ Props - Passing data to child components and layout
- * ✅ State (useState) - Managing employee data through useQuery hooks
- * ✅ State with Array - Managing payslips and attendance arrays
- * ✅ State with Object - Employee profile object and leave balance object
- * ✅ useEffect - Multiple data fetching operations via useQuery
- * ✅ Event Handling - Navigation clicks and action button interactions
- * ✅ Conditional Rendering - Role-based content, loading states, empty states
- * ✅ List Rendering (map) - Rendering quick actions, payslips, attendance records
- * ✅ React Router (Routes) - Navigation links for various employee actions
- * ✅ Context API (for auth state) - Using authentication context for user data
- * ✅ API Calls (fetch / axios) - Multiple API calls for profile, payslips, attendance
- * ✅ Styling (CSS / Tailwind / Bootstrap) - Dashboard layout and responsive design
- */
+
 
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";

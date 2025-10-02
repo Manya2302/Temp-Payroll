@@ -1,13 +1,4 @@
-/**
- * 🔹 Frontend (React) - Authentication Hook
- * MERN Concepts Used:
- * ✅ Context API (for auth state) - Creating and providing authentication context
- * ✅ State (useState) - Managing user state across the app
- * ✅ useEffect - Side effects for authentication state changes
- * ✅ API Calls (fetch / axios) - Login, register, logout API calls
- * ✅ Form Handling - Processing login/register form submissions
- * ✅ Event Handling - Handling authentication events (login, logout)
- */
+
 
 import { createContext, useContext } from "react";
 import {

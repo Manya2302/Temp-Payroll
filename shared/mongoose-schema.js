@@ -1,15 +1,3 @@
-/**
- * 🔹 Backend (Node.js + Express) - Database Schemas & Validation
- * MERN Concepts Used:
- * ✅ Express Server - Database schema definitions for Express application
- * ✅ MongoDB Connection - Mongoose schema definitions and model creation
- * ✅ Validation - Zod schema validation for API endpoints
- * ✅ Routing (CRUD APIs) - Schema validation for CRUD operations
- * ✅ Error Handling Middleware - Schema validation error handling
- * ✅ Authentication (JWT) - User schema for authentication system
- * ✅ Authorization (Role-based) - User roles and employee relationships
- */
-
 import mongoose from 'mongoose';
 import { z } from 'zod';
 
@@ -92,6 +80,22 @@ const employeeSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
+// Quesry Schema 
+
+
+const querySchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true },
+  mobile: { type: String, required: true },
+  message: { type: String, required: true },
+  answer: { type: String, default: "" }, // For admin to answer later
+  replied: { type: Boolean, default: false }, // <-- Add this
+  ignored: { type: Boolean, default: false }  // <-- And this
+}, { timestamps: true });
+
+export const Query = mongoose.model('Query', querySchema);
+
 
 // Payroll Schema
 const payrollSchema = new mongoose.Schema({

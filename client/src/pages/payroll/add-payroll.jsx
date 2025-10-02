@@ -1,20 +1,3 @@
-/**
- * 🔹 Frontend (React) - Add Payroll Component
- * MERN Concepts Used:
- * ✅ Components - Payroll creation form with salary calculations
- * ✅ Props - Passing data to form fields and layout components
- * ✅ State (useState) - Form state managed through react-hook-form
- * ✅ State with Object - Payroll data object with complex calculations
- * ✅ useEffect - Real-time calculations and form value watching
- * ✅ Event Handling - Form submission, calculations, navigation
- * ✅ Form Handling - Complex payroll form with multiple input types
- * ✅ Form Validation - Client-side validation using Zod schema
- * ✅ Conditional Rendering - Role-based access control, loading states
- * ✅ React Router (Routes) - Navigation and role-based redirects
- * ✅ Context API (for auth state) - Using authentication for role checking
- * ✅ API Calls (fetch / axios) - GET employees, POST payroll creation
- * ✅ Styling (CSS / Tailwind / Bootstrap) - Form layout and calculated display
- */
 
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "@tanstack/react-query";

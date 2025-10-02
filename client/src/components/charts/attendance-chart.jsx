@@ -1,13 +1,4 @@
-/**
- * 🔹 Frontend (React) - Attendance Chart Component
- * MERN Concepts Used:
- * ✅ Components - Doughnut chart for attendance visualization
- * ✅ Props - Chart configuration and data props
- * ✅ State (useState) - Chart instance management with useRef
- * ✅ useEffect - Chart initialization and cleanup on mount/unmount
- * ✅ Event Handling - Chart interactions and tooltips
- * ✅ Styling (CSS / Tailwind / Bootstrap) - Chart styling and responsive design
- */
+
 
 import { useEffect, useRef } from 'react';
 import { ensureChartRegistered } from '@/lib/chart';

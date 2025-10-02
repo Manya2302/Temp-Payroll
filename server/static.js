@@ -1,12 +1,3 @@
-/**
- * 🔹 Backend (Node.js + Express) - Static File Serving
- * MERN Concepts Used:
- * ✅ Express Server - Static file serving for production builds
- * ✅ Middleware - Static file middleware configuration
- * ✅ Routing (CRUD APIs) - Catch-all route for SPA support
- * ✅ Error Handling Middleware - Build directory validation
- */
-
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
@@ -16,7 +7,7 @@ import { log } from './log.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export function serveStatic(app) {
-  const distPath = path.resolve(__dirname, 'public');
+  const distPath = path.resolve(import.meta.dirname, "../dist/public");
   if (!fs.existsSync(distPath)) {
     throw new Error(`Could not find build directory: ${distPath}. Run the build first.`);
   }

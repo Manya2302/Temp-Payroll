@@ -1,24 +1,5 @@
-/**
- * 🔹 Frontend (React) - Leave Requests Management Component
- * MERN Concepts Used:
- * ✅ Components - Leave request management table component
- * ✅ Props - Passing data to child components
- * ✅ State (useState) - Filter state management
- * ✅ State with Array - Managing leave requests array
- * ✅ State with Object - Leave request objects with status, dates, employee info
- * ✅ useEffect - Data fetching via useQuery on component mount
- * ✅ Event Handling - Filter changes, status updates, navigation
- * ✅ Form Handling - Status update form processing
- * ✅ Conditional Rendering - Role-based UI, status-based actions, empty states
- * ✅ List Rendering (map) - Rendering leave request table rows from array
- * ✅ React Router (Routes) - Navigation to apply leave form
- * ✅ Context API (for auth state) - Using authentication for role checking
- * ✅ API Calls (fetch / axios) - Fetching leave requests, updating status
- * ✅ Styling (CSS / Tailwind / Bootstrap) - Table styling, status badges, responsive design
- */
-
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,34 +17,34 @@ export default function LeaveRequests() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [filter, setFilter] = useState("all");
+  const queryClient = useQueryClient();
 
-  const { data: leaveRequests, isLoading } = useQuery({
+  const { data: leaveRequests = [], isLoading } = useQuery({
     queryKey: ["/api/leave-requests"],
   });
 
-  const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status }) => {
-      const response = await apiRequest("PATCH", `/api/leave-requests/${id}`, { status });
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/leave-requests"] });
-      toast({
-        title: "Success",
-        description: "Leave request status updated successfully",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
+  const approveMutation = useMutation({
+    mutationFn: (id) =>
+      fetch(`/api/leaves/${id}/approve`, { method: "PUT" }).then((res) => {
+        if (!res.ok) throw new Error("Approve failed");
+      }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/leaves"] }),
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: (id) =>
+      fetch(`/api/leaves/${id}/reject`, { method: "PUT" }).then((res) => {
+        if (!res.ok) throw new Error("Reject failed");
+      }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/leaves"] }),
   });
 
   const handleStatusUpdate = (id, status) => {
-    updateStatusMutation.mutate({ id, status });
+    if (status === 'approved') {
+      approveMutation.mutate(id);
+    } else {
+      rejectMutation.mutate(id);
+    }
   };
 
   const getStatusBadge = (status) => {
@@ -218,7 +199,7 @@ export default function LeaveRequests() {
                                   variant="outline"
                                   className="text-green-600 border-green-600 hover:bg-green-50"
                                   onClick={() => handleStatusUpdate(request.id, 'approved')}
-                                  disabled={updateStatusMutation.isPending}
+                                  disabled={approveMutation.isPending}
                                 >
                                   Approve
                                 </Button>
@@ -227,7 +208,7 @@ export default function LeaveRequests() {
                                   variant="outline"
                                   className="text-red-600 border-red-600 hover:bg-red-50"
                                   onClick={() => handleStatusUpdate(request.id, 'rejected')}
-                                  disabled={updateStatusMutation.isPending}
+                                  disabled={rejectMutation.isPending}
                                 >
                                   Reject
                                 </Button>

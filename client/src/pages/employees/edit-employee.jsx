@@ -1,20 +1,4 @@
-/**
- * 🔹 Frontend (React) - Edit Employee Component
- * MERN Concepts Used:
- * ✅ Components - Employee editing form component
- * ✅ Props - Dynamic route params for employee ID
- * ✅ State (useState) - Form state managed through react-hook-form
- * ✅ State with Object - Employee data object and form state object
- * ✅ useEffect - Loading employee data and populating form on data change
- * ✅ Event Handling - Form submission, navigation, form reset
- * ✅ Form Handling - Pre-populated edit form with employee data
- * ✅ Form Validation - Client-side validation using Zod schema
- * ✅ Conditional Rendering - Loading states, error states, role-based access
- * ✅ React Router (Routes, Dynamic Params) - Dynamic employee ID routing
- * ✅ Context API (for auth state) - Using authentication for role checking
- * ✅ API Calls (fetch / axios) - GET employee data, PUT employee update
- * ✅ Styling (CSS / Tailwind / Bootstrap) - Form layout and responsive design
- */
+
 
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -31,6 +15,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { ArrowLeft, UserCheck } from "lucide-react";
 import Layout from "@/components/layout/layout";
 import { useToast } from "@/hooks/use-toast";
+import React from "react";
 
 const editEmployeeSchema = z.object({
   firstName: z.string().min(1, "First name is required"),

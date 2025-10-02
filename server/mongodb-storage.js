@@ -1,15 +1,3 @@
-/**
- * 🔹 Backend (Node.js + Express) - MongoDB Storage Layer
- * MERN Concepts Used:
- * ✅ Express Server - Database operations layer for Express application
- * ✅ Routing (CRUD APIs) - Database CRUD operations for all entities
- * ✅ MongoDB Connection - Mongoose model operations and queries
- * ✅ Validation - Data validation before database operations
- * ✅ Error Handling Middleware - Database operation error handling
- * ✅ Authentication (JWT) - Session storage configuration
- * ✅ Query Parameters - Database filtering and pagination support
- */
-
 import { 
   User, Employee, Payroll, LeaveRequest, Attendance
 } from "../shared/mongoose-schema.js";
@@ -95,6 +83,31 @@ export class DatabaseStorage {
     }
   }
 
+  async getEmployeeByEmail(email) {
+    try {
+      const employee = await Employee.findOne({ email });
+      return employee ? employee.toObject() : undefined;
+    } catch (error) {
+      console.error('Error getting employee by email:', error);
+      return undefined;
+    }
+  }
+
+  async getUserByEmail(email) {
+    try {
+      const employee = await Employee.findOne({ email });
+      if (!employee) return undefined;
+      const user = await User.findById(employee.userId);
+      return user ? user.toObject() : undefined;
+    } catch (error) {
+      console.error('Error getting user by email:', error);
+      return undefined;
+    }
+  }
+  
+
+  
+
   async getAllEmployees() {
     try {
       const employees = await Employee.find().sort({ createdAt: -1 });
@@ -129,6 +142,8 @@ export class DatabaseStorage {
       throw error;
     }
   }
+
+  
 
   async deleteEmployee(id) {
     try {
@@ -422,5 +437,19 @@ export class DatabaseStorage {
         pendingRequests: 0,
       };
     }
+  }
+
+  async getUnclosedAttendance(startDate, endDate) {
+    return this.AttendanceModel.find({
+      date: { $gte: startDate, $lt: endDate },
+      checkIn: { $exists: true },
+      checkOut: { $exists: false }
+    });
+  }
+
+  async getAttendanceInRange(start, end) {
+    return this.AttendanceModel.find({
+      date: { $gte: start, $lt: end }
+    });
   }
 }

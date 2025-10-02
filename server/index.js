@@ -1,22 +1,12 @@
-/**
- * 🔹 Backend (Node.js + Express) - Main Server File
- * MERN Concepts Used:
- * ✅ Express Server - Creating and configuring Express application
- * ✅ Middleware - JSON parsing, URL encoding, logging, error handling
- * ✅ Routing (CRUD APIs) - Setting up API routes for all endpoints
- * ✅ Authentication (JWT) - Session-based authentication setup
- * ✅ Error Handling Middleware - Global error handler for API endpoints
- * ✅ Validation - Request validation middleware
- * ✅ Route Parameters - Dynamic route handling
- * ✅ Query Parameters - URL parameter processing
- */
-
 import express from "express";
 import "./db.js"; // Initialize MongoDB connection first
 import { setupAuth } from "./auth.js";
 import { createRoutes } from "./routes.js";
 import { log } from "./log.js";
-import { seedDummyData } from "./seed-data.js";
+import employeeLeaveRoutes from "./routes.js";
+import cron from "node-cron";
+import { storage } from "./storage.js";
+import router from "./routes.js";
 
 const app = express();
 
@@ -31,14 +21,7 @@ app.use('/api', (req, _res, next) => {
 
 setupAuth(app);
 createRoutes(app);
-
-// Seed dummy data after authentication setup
-(async () => {
-  // Wait a bit for auth setup to complete
-  setTimeout(async () => {
-    await seedDummyData();
-  }, 2000);
-})();
+app.use(employeeLeaveRoutes);
 
 if (process.env.NODE_ENV === "development") {
   const { setupVite } = await import("./vite-dev.js");
@@ -49,7 +32,7 @@ if (process.env.NODE_ENV === "development") {
   serveStatic(app);
 }
 
-const PORT = 5000;
+const PORT = 5001;
 
 // API error handler returning JSON (avoid HTML error pages)
 app.use('/api', (err, _req, res, _next) => {
@@ -57,6 +40,39 @@ app.use('/api', (err, _req, res, _next) => {
   if (res.headersSent) return;
   res.status(500).json({ message: 'Internal Server Error', detail: process.env.NODE_ENV === 'development' ? String(err) : undefined });
 });
+
+// Run every day at midnight
+cron.schedule("0 0 * * *", async () => {
+  console.log("[Auto Checkout] Running midnight job...");
+
+  try {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setHours(0, 0, 0, 0);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Get all attendance records for yesterday without checkout
+    const records = await storage.getUnclosedAttendance(yesterday, today);
+
+    for (const record of records) {
+      const checkOutTime = new Date(today); // midnight
+      const checkInTime = new Date(record.checkIn);
+      const hoursWorked = ((checkOutTime - checkInTime) / (1000 * 60 * 60)).toFixed(2);
+
+      await storage.updateAttendance(record.id || record._id, {
+        checkOut: checkOutTime,
+        hoursWorked,
+      });
+
+      console.log(`[Auto Checkout] Closed record for employee ${record.employeeId}`);
+    }
+  } catch (err) {
+    console.error("[Auto Checkout] Error:", err);
+  }
+});
+
 app.listen(PORT, "0.0.0.0", () => {
   log(`Express server running on port ${PORT}`);
 });

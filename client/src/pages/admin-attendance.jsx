@@ -1,33 +1,27 @@
-/**
- * 🔹 Frontend (React) - Admin Attendance Summary Page
- * MERN Concepts Used:
- * ✅ Components - Admin attendance management interface
- * ✅ Props - Table data and configuration props
- * ✅ State (useState) - Period, status, search, and attendance data state
- * ✅ State with Array - Attendance data array with filtering
- * ✅ State with Object - Individual attendance record objects
- * ✅ Event Handling - Search, filter, lock/unlock, and data processing
- * ✅ Form Handling - Period selection and search input handling
- * ✅ Conditional Rendering - Status indicators and action buttons
- * ✅ List Rendering (map) - Rendering attendance table rows
- * ✅ Styling (CSS / Tailwind / Bootstrap) - Data table layout and responsive design
- */
-
 import React, { useState } from "react";
 import Layout from "@/components/layout/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useQuery } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function AdminAttendancePage() {
   const [period, setPeriod] = useState("2025-08");
   const [status, setStatus] = useState("Locked");
   const [search, setSearch] = useState("");
-  const [data, setData] = useState([
-    { id: "0721", name: "Alka Pathak", group: "Worker1", totalDays: 28, workingDays: 26, present: 20, leave: 2, travel: 1, holidays: 0, weeklyOff: 8, earlyGoing: 0, lateComing: 0.5, overtime: 0.5, absent: 19, payable: 8.5, status: "Locked" },
-    { id: "05097", name: "Sachin Patil", group: "Apurva", totalDays: 28, workingDays: 26, present: 0, leave: 0, travel: 0, holidays: 0, weeklyOff: 8, earlyGoing: 0, lateComing: 0, overtime: 0, absent: 23, payable: 4, status: "Locked" },
-    // ...more rows
-  ]);
-  const filtered = data.filter(row => row.name.toLowerCase().includes(search.toLowerCase()) || row.id.includes(search));
+
+  const { data = [], isLoading, refetch } = useQuery({
+    queryKey: ["attendance-summary", period],
+    queryFn: async () => {
+      const res = await apiRequest("GET", `/api/attendance/summary?period=${period}`);
+      return res;
+    }
+  });
+
+  const filtered = data.filter(row =>
+    row.name.toLowerCase().includes(search.toLowerCase()) ||
+    String(row.id).includes(search)
+  );
 
   return (
     <Layout>
@@ -84,28 +78,37 @@ export default function AdminAttendancePage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map(row => (
-                <tr key={row.id}>
-                  <td className="border px-2 py-1">{row.name}</td>
-                  <td className="border px-2 py-1">{row.group}</td>
-                  <td className="border px-2 py-1">{row.totalDays}</td>
-                  <td className="border px-2 py-1">{row.workingDays}</td>
-                  <td className="border px-2 py-1">{row.present}</td>
-                  <td className="border px-2 py-1">{row.leave}</td>
-                  <td className="border px-2 py-1">{row.travel}</td>
-                  <td className="border px-2 py-1">{row.holidays}</td>
-                  <td className="border px-2 py-1">{row.weeklyOff}</td>
-                  <td className="border px-2 py-1">{row.earlyGoing}</td>
-                  <td className="border px-2 py-1">{row.lateComing}</td>
-                  <td className="border px-2 py-1">{row.overtime}</td>
-                  <td className="border px-2 py-1">{row.absent}</td>
-                  <td className="border px-2 py-1">{row.payable}</td>
-                  <td className="border px-2 py-1">{row.status}</td>
-                  <td className="border px-2 py-1"><Button size="sm" variant="outline">Save</Button></td>
-                </tr>
-              ))}
+              {isLoading ? (
+                <tr><td colSpan={16} className="text-center py-4">Loading...</td></tr>
+              ) : filtered.length === 0 ? (
+                <tr><td colSpan={16} className="text-center py-4">No data</td></tr>
+              ) : (
+                filtered.map(row => (
+                  <tr key={row.id}>
+                    <td className="border px-2 py-1">{row.name}</td>
+                    <td className="border px-2 py-1">{row.group}</td>
+                    <td className="border px-2 py-1">{row.totalDays}</td>
+                    <td className="border px-2 py-1">{row.workingDays}</td>
+                    <td className="border px-2 py-1">{row.present}</td>
+                    <td className="border px-2 py-1">{row.leave}</td>
+                    <td className="border px-2 py-1">{row.travel}</td>
+                    <td className="border px-2 py-1">{row.holidays}</td>
+                    <td className="border px-2 py-1">{row.weeklyOff}</td>
+                    <td className="border px-2 py-1">{row.earlyGoing}</td>
+                    <td className="border px-2 py-1">{row.lateComing}</td>
+                    <td className="border px-2 py-1">{row.overtime}</td>
+                    <td className="border px-2 py-1">{row.absent}</td>
+                    <td className="border px-2 py-1">{row.payable}</td>
+                    <td className="border px-2 py-1">{row.status}</td>
+                    <td className="border px-2 py-1"><Button size="sm" variant="outline">Save</Button></td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
+        </div>
+        <div className="mt-4">
+          <Button onClick={() => refetch()}>Refresh</Button>
         </div>
       </div>
     </Layout>

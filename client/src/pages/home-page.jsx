@@ -1,18 +1,3 @@
-/**
- * 🔹 Frontend (React) - Landing Page Component
- * MERN Concepts Used:
- * ✅ Components - Landing page with navigation, hero, features, testimonials
- * ✅ Props - Passing data to child components (cards, buttons)
- * ✅ State (useState) - No explicit state but manages auth redirect logic
- * ✅ useEffect - Automatic redirect based on authentication status
- * ✅ Event Handling - Navigation clicks, CTA button interactions
- * ✅ Conditional Rendering - Show loading or redirect based on auth state
- * ✅ List Rendering (map) - Rendering feature cards from data arrays
- * ✅ React Router (Routes) - Navigation links and programmatic redirects
- * ✅ Context API (for auth state) - Using authentication for redirect logic
- * ✅ Styling (CSS / Tailwind / Bootstrap) - Marketing page layout and animations
- */
-
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation, Link } from "wouter";
 import { Calculator, Users, DollarSign, Calendar, BarChart3, Shield, Clock, FileText, ArrowRight, CheckCircle, Play } from "lucide-react";
@@ -20,6 +5,8 @@ import professionalTeamImage from "@assets/generated_images/Professional_office_
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import * as React from "react";
+
+
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -61,6 +48,11 @@ export default function HomePage() {
               <h1 className="text-2xl font-bold text-gray-900">Loco</h1>
             </div>
             <div className="flex items-center space-x-4">
+              <Link to="/help">
+                <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white">
+                  Help Us
+                </Button>
+              </Link>
               <Link href="/login">
                 <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white">
                   Sign In
