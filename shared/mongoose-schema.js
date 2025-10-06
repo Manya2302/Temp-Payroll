@@ -337,3 +337,73 @@ const querySchema = new mongoose.Schema({
 }, { timestamps: true });
 
 export const Query = mongoose.model('Query', querySchema);
+
+const loanSchema = new mongoose.Schema({
+  employeeId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Employee',
+    required: true
+  },
+  loanAmount: {
+    type: Number,
+    required: true
+  },
+  repaymentPeriod: {
+    type: Number,
+    required: true
+  },
+  monthlyEmi: {
+    type: Number,
+    required: true
+  },
+  pendingAmount: {
+    type: Number,
+    required: true
+  },
+  nextDueDate: {
+    type: Date
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'pending'
+  },
+  reason: {
+    type: String,
+    required: true
+  },
+  requestedDate: {
+    type: Date,
+    default: Date.now
+  },
+  approvedDate: {
+    type: Date
+  },
+  remarks: {
+    type: String,
+    default: ''
+  }
+}, {
+  timestamps: true
+});
+
+loanSchema.virtual('id').get(function() {
+  return this._id.toHexString();
+});
+
+loanSchema.set('toJSON', {
+  virtuals: true
+});
+
+loanSchema.set('toObject', {
+  virtuals: true
+});
+
+export const Loan = mongoose.model('Loan', loanSchema);
+
+export const insertLoanSchema = z.object({
+  employeeId: z.string(),
+  loanAmount: z.number().positive(),
+  repaymentPeriod: z.number().positive().int(),
+  reason: z.string().min(1)
+});

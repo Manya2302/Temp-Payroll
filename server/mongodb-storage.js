@@ -413,7 +413,7 @@
 //   }
 // }
 import { 
-  User, Employee, Payroll, LeaveRequest, Attendance, Profile
+  User, Employee, Payroll, LeaveRequest, Attendance, Profile, Loan
 } from "../shared/mongoose-schema.js";
 import mongoose from "mongoose";
 import session from "express-session";
@@ -895,6 +895,90 @@ export class DatabaseStorage {
       await Profile.findOneAndDelete({ employeeId });
     } catch (error) {
       console.error('Error deleting profile:', error);
+      throw error;
+    }
+  }
+
+  async getLoan(id) {
+    try {
+      const loan = await Loan.findById(id).populate('employeeId', 'firstName lastName email');
+      return loan ? loan.toObject() : undefined;
+    } catch (error) {
+      console.error('Error getting loan:', error);
+      return undefined;
+    }
+  }
+
+  async getLoansByEmployee(employeeId) {
+    try {
+      const loans = await Loan.find({ employeeId }).sort({ createdAt: -1 });
+      return loans.map(loan => loan.toObject());
+    } catch (error) {
+      console.error('Error getting loans by employee:', error);
+      return [];
+    }
+  }
+
+  async getAllLoans() {
+    try {
+      const loans = await Loan.find().populate('employeeId', 'firstName lastName email').sort({ createdAt: -1 });
+      return loans.map(loan => loan.toObject());
+    } catch (error) {
+      console.error('Error getting all loans:', error);
+      return [];
+    }
+  }
+
+  async getPendingLoans() {
+    try {
+      const loans = await Loan.find({ status: 'pending' }).populate('employeeId', 'firstName lastName email').sort({ createdAt: -1 });
+      return loans.map(loan => loan.toObject());
+    } catch (error) {
+      console.error('Error getting pending loans:', error);
+      return [];
+    }
+  }
+
+  async getApprovedLoans() {
+    try {
+      const loans = await Loan.find({ status: 'approved' }).populate('employeeId', 'firstName lastName email').sort({ createdAt: -1 });
+      return loans.map(loan => loan.toObject());
+    } catch (error) {
+      console.error('Error getting approved loans:', error);
+      return [];
+    }
+  }
+
+  async createLoan(insertLoan) {
+    try {
+      const loan = new Loan(insertLoan);
+      await loan.save();
+      return loan.toObject();
+    } catch (error) {
+      console.error('Error creating loan:', error);
+      throw error;
+    }
+  }
+
+  async updateLoan(id, updateLoan) {
+    try {
+      const loan = await Loan.findByIdAndUpdate(
+        id, 
+        updateLoan, 
+        { new: true }
+      );
+      return loan ? loan.toObject() : undefined;
+    } catch (error) {
+      console.error('Error updating loan:', error);
+      throw error;
+    }
+  }
+
+  async deleteLoan(id) {
+    try {
+      await Loan.findByIdAndDelete(id);
+    } catch (error) {
+      console.error('Error deleting loan:', error);
       throw error;
     }
   }
