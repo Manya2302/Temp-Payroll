@@ -130,41 +130,14 @@ export default function EmployeeLoans() {
   };
 
   const handlePaymentSuccess = async (paymentData) => {
-    try {
-      const response = await fetch(`/api/loans/${selectedLoan._id || selectedLoan.id}/paypal-payment`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          orderID: paymentData.id,
-          paymentDetails: paymentData
-        })
-      });
-
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Payment processed successfully"
-        });
-        setShowPaymentDialog(false);
-        setSelectedLoan(null);
-        fetchLoans();
-        fetchEMIs();
-      } else {
-        const error = await response.json();
-        toast({
-          title: "Error",
-          description: error.message || "Payment processing failed",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Payment processing failed",
-        variant: "destructive"
-      });
-    }
+    toast({
+      title: "Success",
+      description: "Payment processed successfully"
+    });
+    setShowPaymentDialog(false);
+    setSelectedLoan(null);
+    fetchLoans();
+    fetchEMIs();
   };
 
   const handlePaymentError = (error) => {
@@ -416,9 +389,7 @@ export default function EmployeeLoans() {
               {selectedLoan && (
                 <div className="flex justify-center">
                   <PayPalButton
-                    amount={selectedLoan.monthlyEmi.toFixed(2)}
-                    currency="USD"
-                    intent="CAPTURE"
+                    loanId={selectedLoan._id || selectedLoan.id}
                     onSuccess={handlePaymentSuccess}
                     onError={handlePaymentError}
                     onCancel={handlePaymentCancel}

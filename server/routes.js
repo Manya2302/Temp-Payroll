@@ -705,22 +705,8 @@ export function createRoutes(app) {
     await loadPaypalDefault(req, res);
   });
 
-  app.post("/api/paypal/order", async (req, res) => {
-    await createPaypalOrder(req, res);
-  });
-
-  app.post("/api/paypal/order/:orderID/capture", async (req, res) => {
-    await capturePaypalOrder(req, res);
-  });
-
-  app.post("/api/loans/:id/paypal-payment", requireAuth, async (req, res) => {
+  app.post("/api/loans/:id/paypal-order", requireAuth, async (req, res) => {
     try {
-      const { orderID, paymentDetails } = req.body;
-
-      if (!orderID) {
-        return res.status(400).json({ message: "Missing order ID" });
-      }
-
       const loan = await storage.getLoan(req.params.id);
       if (!loan) return res.status(404).json({ message: "Loan not found" });
 
@@ -733,33 +719,84 @@ export function createRoutes(app) {
         return res.status(400).json({ message: "Can only pay for approved loans" });
       }
 
-      const newPendingAmount = Math.max(0, loan.pendingAmount - loan.monthlyEmi);
-      const nextDueDate = newPendingAmount > 0 ? new Date(loan.nextDueDate || new Date()) : null;
-      if (nextDueDate) {
-        nextDueDate.setMonth(nextDueDate.getMonth() + 1);
+      if (loan.pendingAmount <= 0) {
+        return res.status(400).json({ message: "No pending amount for this loan" });
       }
 
-      const updatedLoan = await storage.updateLoan(req.params.id, {
-        pendingAmount: newPendingAmount,
-        nextDueDate: nextDueDate
-      });
-
-      const emiData = {
-        employeeId: (employee._id || employee.id).toString(),
-        loanId: (loan._id || loan.id).toString(),
-        amount: loan.monthlyEmi,
-        paymentMethod: 'paypal',
-        transactionId: paymentDetails?.id || orderID,
-        paypalOrderId: orderID,
-        status: 'completed'
+      const orderPayload = {
+        body: {
+          amount: loan.monthlyEmi.toFixed(2),
+          currency: 'USD',
+          intent: 'CAPTURE'
+        }
       };
 
-      const emi = await storage.createEMI(emiData);
-
-      res.json({ success: true, loan: updatedLoan, emi });
+      await createPaypalOrder({ body: orderPayload.body }, res);
     } catch (error) {
-      console.error('Error processing PayPal payment:', error);
-      res.status(500).json({ message: "Failed to process payment" });
+      console.error('Error creating PayPal order for loan:', error);
+      res.status(500).json({ message: "Failed to create payment order" });
+    }
+  });
+
+  app.post("/api/loans/:id/paypal-capture/:orderID", requireAuth, async (req, res) => {
+    try {
+      const loan = await storage.getLoan(req.params.id);
+      if (!loan) return res.status(404).json({ message: "Loan not found" });
+
+      const employee = await storage.getEmployeeByUserId(req.user.id);
+      if (!employee || (loan.employeeId._id || loan.employeeId).toString() !== (employee._id || employee.id).toString()) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+
+      if (loan.status !== 'approved') {
+        return res.status(400).json({ message: "Can only pay for approved loans" });
+      }
+
+      const captureReq = {
+        params: { orderID: req.params.orderID }
+      };
+
+      const captureRes = {
+        status: function(code) {
+          this.statusCode = code;
+          return this;
+        },
+        json: async function(data) {
+          if (this.statusCode === 200 || this.statusCode === 201) {
+            const newPendingAmount = Math.max(0, loan.pendingAmount - loan.monthlyEmi);
+            const nextDueDate = newPendingAmount > 0 ? new Date(loan.nextDueDate || new Date()) : null;
+            if (nextDueDate) {
+              nextDueDate.setMonth(nextDueDate.getMonth() + 1);
+            }
+
+            const updatedLoan = await storage.updateLoan(req.params.id, {
+              pendingAmount: newPendingAmount,
+              nextDueDate: nextDueDate
+            });
+
+            const emiData = {
+              employeeId: (employee._id || employee.id).toString(),
+              loanId: (loan._id || loan.id).toString(),
+              amount: loan.monthlyEmi,
+              paymentMethod: 'paypal',
+              transactionId: data.id || req.params.orderID,
+              paypalOrderId: req.params.orderID,
+              status: 'completed'
+            };
+
+            const emi = await storage.createEMI(emiData);
+
+            res.json({ success: true, loan: updatedLoan, emi, paypalData: data });
+          } else {
+            res.status(this.statusCode).json(data);
+          }
+        }
+      };
+
+      await capturePaypalOrder(captureReq, captureRes);
+    } catch (error) {
+      console.error('Error capturing PayPal payment:', error);
+      res.status(500).json({ message: "Failed to capture payment" });
     }
   });
 

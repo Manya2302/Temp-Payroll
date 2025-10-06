@@ -1,31 +1,23 @@
 import React, { useEffect } from "react";
 
 export default function PayPalButton({
-  amount,
-  currency,
-  intent,
+  loanId,
   onSuccess,
   onError,
   onCancel
 }) {
   const createOrder = async () => {
-    const orderPayload = {
-      amount: amount,
-      currency: currency,
-      intent: intent,
-    };
-    const response = await fetch("/api/paypal/order", {
+    const response = await fetch(`/api/loans/${loanId}/paypal-order`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify(orderPayload),
     });
     const output = await response.json();
     return { orderId: output.id };
   };
 
   const captureOrder = async (orderId) => {
-    const response = await fetch(`/api/paypal/order/${orderId}/capture`, {
+    const response = await fetch(`/api/loans/${loanId}/paypal-capture/${orderId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
