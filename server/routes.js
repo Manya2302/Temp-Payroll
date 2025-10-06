@@ -8,6 +8,7 @@ import {
 } from "../shared/mongoose-schema.js";
 import nodemailer from "nodemailer";
 import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal.js";
+import PDFDocument from "pdfkit";
 
 const router = express.Router();
 
@@ -801,6 +802,69 @@ export function createRoutes(app) {
     } catch (error) {
       console.error('Error fetching employee EMIs:', error);
       res.status(500).json({ message: "Failed to fetch EMI records" });
+    }
+  });
+
+  app.get("/api/emis/:id/invoice", requireAuth, async (req, res) => {
+    try {
+      const emi = await storage.getEMI(req.params.id);
+      if (!emi) return res.status(404).json({ message: "EMI record not found" });
+
+      const employee = await storage.getEmployeeByUserId(req.user.id);
+      if (req.user.role !== 'admin' && (!employee || (emi.employeeId._id || emi.employeeId).toString() !== (employee._id || employee.id).toString())) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+
+      const doc = new PDFDocument({ margin: 50 });
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename=EMI_Invoice_${req.params.id}.pdf`);
+      
+      doc.pipe(res);
+
+      doc.fontSize(20).text('EMI Payment Invoice', { align: 'center' });
+      doc.moveDown();
+      
+      doc.fontSize(12).text(`Invoice Date: ${new Date().toLocaleDateString()}`, { align: 'right' });
+      doc.text(`Invoice ID: ${emi._id || emi.id}`, { align: 'right' });
+      doc.moveDown();
+
+      doc.fontSize(14).text('Employee Details:', { underline: true });
+      doc.fontSize(12);
+      doc.text(`Name: ${emi.employeeId.firstName} ${emi.employeeId.lastName}`);
+      doc.text(`Email: ${emi.employeeId.email}`);
+      doc.moveDown();
+
+      doc.fontSize(14).text('Payment Details:', { underline: true });
+      doc.fontSize(12);
+      doc.text(`Payment Date: ${new Date(emi.paymentDate).toLocaleDateString()}`);
+      doc.text(`Amount Paid: ₹${emi.amount.toFixed(2)}`);
+      doc.text(`Payment Method: ${emi.paymentMethod.toUpperCase()}`);
+      doc.text(`Transaction ID: ${emi.transactionId}`);
+      if (emi.paypalOrderId) {
+        doc.text(`PayPal Order ID: ${emi.paypalOrderId}`);
+      }
+      doc.text(`Status: ${emi.status.toUpperCase()}`);
+      doc.moveDown();
+
+      if (emi.loanId) {
+        doc.fontSize(14).text('Loan Details:', { underline: true });
+        doc.fontSize(12);
+        doc.text(`Loan Amount: ₹${emi.loanId.loanAmount.toFixed(2)}`);
+        doc.text(`Monthly EMI: ₹${emi.loanId.monthlyEmi.toFixed(2)}`);
+        doc.text(`Pending Amount: ₹${emi.loanId.pendingAmount.toFixed(2)}`);
+        doc.moveDown();
+      }
+
+      doc.fontSize(10).text('This is a computer-generated invoice and does not require a signature.', { 
+        align: 'center',
+        color: 'gray'
+      });
+
+      doc.end();
+    } catch (error) {
+      console.error('Error generating invoice:', error);
+      res.status(500).json({ message: "Failed to generate invoice" });
     }
   });
 
