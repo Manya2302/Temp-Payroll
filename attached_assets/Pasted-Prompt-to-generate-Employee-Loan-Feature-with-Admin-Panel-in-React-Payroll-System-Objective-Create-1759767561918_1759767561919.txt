@@ -1,0 +1,94 @@
+Prompt to generate Employee Loan Feature with Admin Panel in React Payroll System
+
+Objective:
+Create a Loan Management feature in a React Payroll Management System where employees can request loans, see status, pay monthly EMIs using Razorpay, and admin can manage, approve, and track all loans.
+
+1. Database Structure
+
+Create a Loans table with these fields:
+
+Field Name	Type	Description
+loan_id	Auto-increment / UUID	Unique loan identifier
+employee_id	Foreign Key	Link to employee table
+loan_amount	Decimal / Float	Total loan amount requested
+repayment_period	Integer	Number of months
+monthly_emi	Decimal / Float	Loan amount divided by repayment period
+pending_amount	Decimal / Float	Remaining loan balance
+next_due_date	Date	Next EMI due date (updates monthly)
+status	Enum/String	pending, approved, rejected
+reason	Text	Reason for loan
+requested_date	DateTime	When employee submitted request
+approved_date	DateTime	When admin approved loan
+remarks	Text	Admin remarks if any
+2. Employee-Side UI
+
+Single page divided into three sections:
+
+a. Loan Application Form:
+
+Inputs: Loan Amount, Reason, Repayment Period (months)
+
+Submit button to request loan
+
+b. Loan Status Section:
+
+Show current loan status: Pending, Approved, Rejected
+
+c. Approved Loan Table:
+
+Columns: Loan Amount, Pending Amount, Next Due Date, Pay Now
+
+Calculate monthly EMI dynamically:
+
+monthly_emi = loan_amount / repayment_period
+
+
+Update pending_amount and next_due_date after each monthly payment
+
+Integrate Razorpay for monthly EMI payment:
+
+Pay Now triggers payment for EMI amount
+
+On success, update pending_amount and next_due_date
+
+3. Admin-Side UI
+
+Admin dashboard page for managing loans:
+
+a. Pending Loan Requests Table:
+
+Columns: Employee Name, Loan Amount, Repayment Period, Requested Date, Reason, Approve/Reject Buttons
+
+Approve button: Updates loan status to approved, sets approved_date, calculates monthly_emi, sets pending_amount = loan_amount, and initializes next_due_date
+
+Reject button: Updates loan status to rejected and optionally adds remarks
+
+b. All Loans Table:
+
+Columns: Employee Name, Loan Amount, Pending Amount, Next Due Date, Status, Remarks
+
+Admin can filter loans by approved, pending, rejected
+
+Optionally, show repayment history and upcoming EMIs
+
+c. Professional Features:
+
+Pagination and search on tables for better UX
+
+Highlight overdue loans or upcoming EMIs
+
+Optionally, export loan data to CSV/PDF
+
+4. Technical Requirements
+
+React for frontend
+
+Razorpay for monthly EMI payments
+
+Database fields as specified to track loans, EMIs, next due dates, and statuses
+
+EMI logic dynamically divides loan_amount by repayment_period
+
+Updates pending_amount and next_due_date after each payment
+
+Employee and admin pages should look professional, clean, and modern
