@@ -413,7 +413,7 @@
 //   }
 // }
 import { 
-  User, Employee, Payroll, LeaveRequest, Attendance, Profile, Loan
+  User, Employee, Payroll, LeaveRequest, Attendance, Profile, Loan, EMI
 } from "../shared/mongoose-schema.js";
 import mongoose from "mongoose";
 import session from "express-session";
@@ -979,6 +979,66 @@ export class DatabaseStorage {
       await Loan.findByIdAndDelete(id);
     } catch (error) {
       console.error('Error deleting loan:', error);
+      throw error;
+    }
+  }
+
+  async createEMI(insertEMI) {
+    try {
+      const emi = new EMI(insertEMI);
+      await emi.save();
+      return emi.toObject();
+    } catch (error) {
+      console.error('Error creating EMI:', error);
+      throw error;
+    }
+  }
+
+  async getEMI(id) {
+    try {
+      const emi = await EMI.findById(id).populate('employeeId', 'firstName lastName email').populate('loanId');
+      return emi ? emi.toObject() : undefined;
+    } catch (error) {
+      console.error('Error getting EMI:', error);
+      return undefined;
+    }
+  }
+
+  async getEMIsByLoan(loanId) {
+    try {
+      const emis = await EMI.find({ loanId }).populate('employeeId', 'firstName lastName email').sort({ paymentDate: -1 });
+      return emis.map(emi => emi.toObject());
+    } catch (error) {
+      console.error('Error getting EMIs by loan:', error);
+      return [];
+    }
+  }
+
+  async getEMIsByEmployee(employeeId) {
+    try {
+      const emis = await EMI.find({ employeeId }).populate('loanId').sort({ paymentDate: -1 });
+      return emis.map(emi => emi.toObject());
+    } catch (error) {
+      console.error('Error getting EMIs by employee:', error);
+      return [];
+    }
+  }
+
+  async getAllEMIs() {
+    try {
+      const emis = await EMI.find().populate('employeeId', 'firstName lastName email').populate('loanId').sort({ paymentDate: -1 });
+      return emis.map(emi => emi.toObject());
+    } catch (error) {
+      console.error('Error getting all EMIs:', error);
+      return [];
+    }
+  }
+
+  async deleteEMI(id) {
+    try {
+      await EMI.findByIdAndDelete(id);
+    } catch (error) {
+      console.error('Error deleting EMI:', error);
       throw error;
     }
   }
