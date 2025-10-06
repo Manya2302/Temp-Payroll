@@ -407,3 +407,70 @@ export const insertLoanSchema = z.object({
   repaymentPeriod: z.number().positive().int(),
   reason: z.string().min(1)
 });
+
+const emiSchema = new mongoose.Schema({
+  employeeId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Employee',
+    required: true
+  },
+  loanId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Loan',
+    required: true
+  },
+  amount: {
+    type: Number,
+    required: true
+  },
+  paymentDate: {
+    type: Date,
+    default: Date.now,
+    required: true
+  },
+  paymentMethod: {
+    type: String,
+    enum: ['paypal', 'razorpay', 'cash', 'bank_transfer'],
+    default: 'paypal',
+    required: true
+  },
+  transactionId: {
+    type: String,
+    required: true
+  },
+  paypalOrderId: {
+    type: String
+  },
+  status: {
+    type: String,
+    enum: ['completed', 'pending', 'failed'],
+    default: 'completed',
+    required: true
+  }
+}, {
+  timestamps: true
+});
+
+emiSchema.virtual('id').get(function() {
+  return this._id.toHexString();
+});
+
+emiSchema.set('toJSON', {
+  virtuals: true
+});
+
+emiSchema.set('toObject', {
+  virtuals: true
+});
+
+export const EMI = mongoose.model('EMI', emiSchema);
+
+export const insertEMISchema = z.object({
+  employeeId: z.string(),
+  loanId: z.string(),
+  amount: z.number().positive(),
+  paymentMethod: z.enum(['paypal', 'razorpay', 'cash', 'bank_transfer']),
+  transactionId: z.string().min(1),
+  paypalOrderId: z.string().optional(),
+  status: z.enum(['completed', 'pending', 'failed']).optional()
+});
