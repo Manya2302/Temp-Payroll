@@ -7,8 +7,7 @@ import {
   insertAttendanceSchema, Profile, insertProfileSchema, Query, insertLoanSchema
 } from "../shared/mongoose-schema.js";
 import nodemailer from "nodemailer";
-import Razorpay from "razorpay";
-import crypto from "crypto";
+import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal.js";
 
 const router = express.Router();
 
@@ -700,8 +699,27 @@ export function createRoutes(app) {
     }
   });
 
-  app.post("/api/loans/:id/create-order", requireAuth, async (req, res) => {
+  /*** PAYPAL ROUTES ***/
+  app.get("/api/paypal/setup", async (req, res) => {
+    await loadPaypalDefault(req, res);
+  });
+
+  app.post("/api/paypal/order", async (req, res) => {
+    await createPaypalOrder(req, res);
+  });
+
+  app.post("/api/paypal/order/:orderID/capture", async (req, res) => {
+    await capturePaypalOrder(req, res);
+  });
+
+  app.post("/api/loans/:id/paypal-payment", requireAuth, async (req, res) => {
     try {
+      const { orderID, paymentDetails } = req.body;
+
+      if (!orderID) {
+        return res.status(400).json({ message: "Missing order ID" });
+      }
+
       const loan = await storage.getLoan(req.params.id);
       if (!loan) return res.status(404).json({ message: "Loan not found" });
 
@@ -714,65 +732,8 @@ export function createRoutes(app) {
         return res.status(400).json({ message: "Can only pay for approved loans" });
       }
 
-      if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-        return res.status(500).json({ message: "Razorpay not configured. Please add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to environment variables." });
-      }
-
-      const razorpay = new Razorpay({
-        key_id: process.env.RAZORPAY_KEY_ID,
-        key_secret: process.env.RAZORPAY_KEY_SECRET,
-      });
-
-      const options = {
-        amount: Math.round(loan.monthlyEmi * 100),
-        currency: "INR",
-        receipt: `loan_${loan._id || loan.id}_${Date.now()}`,
-      };
-
-      const order = await razorpay.orders.create(options);
-      res.json({
-        orderId: order.id,
-        amount: loan.monthlyEmi,
-        keyId: process.env.RAZORPAY_KEY_ID
-      });
-    } catch (error) {
-      console.error('Error creating Razorpay order:', error);
-      res.status(500).json({ message: "Failed to create payment order" });
-    }
-  });
-
-  app.post("/api/loans/:id/verify-payment", requireAuth, async (req, res) => {
-    try {
-      const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-
-      if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-        return res.status(400).json({ message: "Missing payment details" });
-      }
-
-      const loan = await storage.getLoan(req.params.id);
-      if (!loan) return res.status(404).json({ message: "Loan not found" });
-
-      const employee = await storage.getEmployeeByUserId(req.user.id);
-      if (!employee || (loan.employeeId._id || loan.employeeId).toString() !== (employee._id || employee.id).toString()) {
-        return res.status(403).json({ message: "Unauthorized" });
-      }
-
-      if (!process.env.RAZORPAY_KEY_SECRET) {
-        return res.status(500).json({ message: "Razorpay not configured" });
-      }
-
-      const body = razorpay_order_id + "|" + razorpay_payment_id;
-      const expectedSignature = crypto
-        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-        .update(body.toString())
-        .digest("hex");
-
-      if (expectedSignature !== razorpay_signature) {
-        return res.status(400).json({ message: "Payment verification failed" });
-      }
-
       const newPendingAmount = Math.max(0, loan.pendingAmount - loan.monthlyEmi);
-      const nextDueDate = newPendingAmount > 0 ? new Date(loan.nextDueDate) : null;
+      const nextDueDate = newPendingAmount > 0 ? new Date(loan.nextDueDate || new Date()) : null;
       if (nextDueDate) {
         nextDueDate.setMonth(nextDueDate.getMonth() + 1);
       }
@@ -782,10 +743,64 @@ export function createRoutes(app) {
         nextDueDate: nextDueDate
       });
 
-      res.json({ success: true, loan: updatedLoan });
+      const emiData = {
+        employeeId: (employee._id || employee.id).toString(),
+        loanId: (loan._id || loan.id).toString(),
+        amount: loan.monthlyEmi,
+        paymentMethod: 'paypal',
+        transactionId: paymentDetails?.id || orderID,
+        paypalOrderId: orderID,
+        status: 'completed'
+      };
+
+      const emi = await storage.createEMI(emiData);
+
+      res.json({ success: true, loan: updatedLoan, emi });
     } catch (error) {
-      console.error('Error verifying payment:', error);
-      res.status(500).json({ message: "Failed to verify payment" });
+      console.error('Error processing PayPal payment:', error);
+      res.status(500).json({ message: "Failed to process payment" });
+    }
+  });
+
+  /*** EMI ROUTES ***/
+  app.get("/api/emis", requireAdmin, async (req, res) => {
+    try {
+      const emis = await storage.getAllEMIs();
+      res.json(emis);
+    } catch (error) {
+      console.error('Error fetching EMIs:', error);
+      res.status(500).json({ message: "Failed to fetch EMI records" });
+    }
+  });
+
+  app.get("/api/emis/loan/:loanId", requireAuth, async (req, res) => {
+    try {
+      const loan = await storage.getLoan(req.params.loanId);
+      if (!loan) return res.status(404).json({ message: "Loan not found" });
+
+      const employee = await storage.getEmployeeByUserId(req.user.id);
+      if (req.user.role !== 'admin' && (!employee || (loan.employeeId._id || loan.employeeId).toString() !== (employee._id || employee.id).toString())) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+
+      const emis = await storage.getEMIsByLoan(req.params.loanId);
+      res.json(emis);
+    } catch (error) {
+      console.error('Error fetching loan EMIs:', error);
+      res.status(500).json({ message: "Failed to fetch EMI records" });
+    }
+  });
+
+  app.get("/api/emis/employee", requireAuth, async (req, res) => {
+    try {
+      const employee = await storage.getEmployeeByUserId(req.user.id);
+      if (!employee) return res.status(404).json({ message: "Employee profile not found" });
+
+      const emis = await storage.getEMIsByEmployee(employee._id || employee.id);
+      res.json(emis);
+    } catch (error) {
+      console.error('Error fetching employee EMIs:', error);
+      res.status(500).json({ message: "Failed to fetch EMI records" });
     }
   });
 
