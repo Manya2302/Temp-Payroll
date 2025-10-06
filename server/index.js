@@ -21,6 +21,11 @@ app.use('/api', (req, _res, next) => {
 setupAuth(app);
 createRoutes(app);
 
+// Informational log about optional DB skipping
+if ((process.env.SKIP_DB || 'false').toLowerCase() === 'true') {
+  log('Server started in SKIP_DB mode — MongoDB connection was skipped');
+}
+
 
 
 if (process.env.NODE_ENV === "development") {

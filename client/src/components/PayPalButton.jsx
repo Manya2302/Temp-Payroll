@@ -56,54 +56,97 @@ export default function PayPalButton({
   useEffect(() => {
     const loadPayPalSDK = async () => {
       try {
+        // First fetch setup to get clientToken and mode so we load the correct SDK domain
+        console.log('[paypal] fetching /api/paypal/setup');
+        const setupResp = await fetch('/api/paypal/setup', { credentials: 'include' });
+        const setup = await setupResp.json().catch(e => {
+          console.error('[paypal] failed to parse /api/paypal/setup response', e, setupResp);
+          throw e;
+        });
+
+        const clientToken = setup?.clientToken;
+        const mode = (setup?.mode || 'sandbox').toLowerCase();
+
+        console.log('[paypal] setup received', { mode, hasClientToken: !!clientToken });
+
+        const sdkUrl = mode === 'production'
+          ? 'https://www.paypal.com/web-sdk/v6/core'
+          : 'https://www.sandbox.paypal.com/web-sdk/v6/core';
+
+        if (!clientToken) {
+          throw new Error('[paypal] Missing client token from /api/paypal/setup');
+        }
+
         if (!window.paypal) {
-          const script = document.createElement("script");
-          script.src = import.meta.env.PROD
-            ? "https://www.paypal.com/web-sdk/v6/core"
-            : "https://www.sandbox.paypal.com/web-sdk/v6/core";
+          console.log('[paypal] injecting SDK script', sdkUrl);
+          const script = document.createElement('script');
+          script.src = sdkUrl;
           script.async = true;
-          script.onload = () => initPayPal();
+          script.onload = () => {
+            console.log('[paypal] SDK script loaded');
+            initPayPal(clientToken).catch(err => console.error('[paypal] initPayPal error after script load', err));
+          };
+          script.onerror = (err) => {
+            console.error('[paypal] SDK script failed to load', err);
+            if (onError) onError(err);
+          };
           document.body.appendChild(script);
         } else {
-          await initPayPal();
+          console.log('[paypal] window.paypal already present, initializing');
+          await initPayPal(clientToken);
         }
       } catch (e) {
-        console.error("Failed to load PayPal SDK", e);
+        console.error('[paypal] Failed to load PayPal SDK/setup', e);
+        if (onError) onError(e);
       }
     };
 
     loadPayPalSDK();
   }, []);
 
-  const initPayPal = async () => {
+  const initPayPal = async (clientToken) => {
     try {
-      const clientToken = await fetch("/api/paypal/setup", {
-        credentials: "include"
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          return data.clientToken;
+      if (!clientToken) {
+        throw new Error('Missing client token for PayPal initialization');
+      }
+
+      console.log('[paypal] creating SDK instance');
+      let sdkInstance;
+      try {
+        sdkInstance = await window.paypal.createInstance({
+          clientToken,
+          components: ['paypal-payments'],
         });
+      } catch (err) {
+        console.error('[paypal] window.paypal.createInstance failed', err);
+        throw err;
+      }
 
-      const sdkInstance = await window.paypal.createInstance({
-        clientToken,
-        components: ["paypal-payments"],
-      });
-
-      const paypalCheckout =
-        sdkInstance.createPayPalOneTimePaymentSession({
+      let paypalCheckout;
+      try {
+        paypalCheckout = sdkInstance.createPayPalOneTimePaymentSession({
           onApprove,
           onCancel: onCancelHandler,
           onError: onErrorHandler,
         });
+      } catch (err) {
+        console.error('[paypal] createPayPalOneTimePaymentSession failed', err);
+        throw err;
+      }
 
       const onClick = async () => {
         try {
+          console.log('[paypal] button clicked - starting checkout');
           const checkoutOptionsPromise = createOrder();
-          await paypalCheckout.start(
-            { paymentFlow: "auto" },
-            checkoutOptionsPromise,
-          );
+          try {
+            await paypalCheckout.start(
+              { paymentFlow: "auto" },
+              checkoutOptionsPromise,
+            );
+          } catch (err) {
+            console.error('[paypal] paypalCheckout.start failed', err);
+            throw err;
+          }
         } catch (e) {
           console.error(e);
           if (onError) {
