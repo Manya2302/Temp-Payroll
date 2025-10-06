@@ -4,7 +4,7 @@ import { storage } from "./storage.js";
 import express from 'express';
 import {
   insertEmployeeSchema, insertPayrollSchema, insertLeaveRequestSchema,
-  insertAttendanceSchema, Profile, insertProfileSchema, Query
+  insertAttendanceSchema, Profile, insertProfileSchema, Query, insertLoanSchema
 } from "../shared/mongoose-schema.js";
 import nodemailer from "nodemailer";
 
@@ -578,6 +578,155 @@ export function createRoutes(app) {
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: "Failed to answer query and send email" });
+    }
+  });
+
+  /*** LOAN ROUTES ***/
+  app.get("/api/loans", requireAuth, async (req, res) => {
+    try {
+      const user = req.user;
+      if (user.role === 'admin') {
+        const loans = await storage.getAllLoans();
+        res.json(loans);
+      } else {
+        const employee = await storage.getEmployeeByUserId(user.id);
+        if (!employee) return res.status(404).json({ message: "Employee profile not found" });
+        const loans = await storage.getLoansByEmployee(employee._id || employee.id);
+        res.json(loans);
+      }
+    } catch (error) {
+      console.error('Error fetching loans:', error);
+      res.status(500).json({ message: "Failed to fetch loans" });
+    }
+  });
+
+  app.get("/api/loans/pending", requireAdmin, async (req, res) => {
+    try {
+      const loans = await storage.getPendingLoans();
+      res.json(loans);
+    } catch (error) {
+      console.error('Error fetching pending loans:', error);
+      res.status(500).json({ message: "Failed to fetch pending loans" });
+    }
+  });
+
+  app.get("/api/loans/approved", requireAdmin, async (req, res) => {
+    try {
+      const loans = await storage.getApprovedLoans();
+      res.json(loans);
+    } catch (error) {
+      console.error('Error fetching approved loans:', error);
+      res.status(500).json({ message: "Failed to fetch approved loans" });
+    }
+  });
+
+  app.post("/api/loans", requireAuth, async (req, res) => {
+    try {
+      const employee = await storage.getEmployeeByUserId(req.user.id);
+      if (!employee) return res.status(404).json({ message: "Employee profile not found" });
+
+      const loanData = {
+        employeeId: (employee._id || employee.id).toString(),
+        loanAmount: Number(req.body.loanAmount),
+        repaymentPeriod: Number(req.body.repaymentPeriod),
+        reason: req.body.reason,
+        monthlyEmi: Number(req.body.loanAmount) / Number(req.body.repaymentPeriod),
+        pendingAmount: Number(req.body.loanAmount),
+        status: 'pending'
+      };
+
+      const validatedData = insertLoanSchema.parse(loanData);
+      const loan = await storage.createLoan({
+        ...validatedData,
+        monthlyEmi: loanData.monthlyEmi,
+        pendingAmount: loanData.pendingAmount,
+        status: loanData.status
+      });
+      
+      res.status(201).json(loan);
+    } catch (error) {
+      console.error('Error creating loan:', error);
+      res.status(400).json({ message: "Invalid loan data", error: error.message });
+    }
+  });
+
+  app.patch("/api/loans/:id/approve", requireAdmin, async (req, res) => {
+    try {
+      const loan = await storage.getLoan(req.params.id);
+      if (!loan) return res.status(404).json({ message: "Loan not found" });
+
+      if (loan.status !== 'pending') {
+        return res.status(400).json({ message: "Only pending loans can be approved" });
+      }
+
+      const approvedDate = new Date();
+      const nextDueDate = new Date();
+      nextDueDate.setMonth(nextDueDate.getMonth() + 1);
+
+      const updatedLoan = await storage.updateLoan(req.params.id, {
+        status: 'approved',
+        approvedDate,
+        nextDueDate,
+        remarks: req.body.remarks || ''
+      });
+
+      res.json(updatedLoan);
+    } catch (error) {
+      console.error('Error approving loan:', error);
+      res.status(500).json({ message: "Failed to approve loan" });
+    }
+  });
+
+  app.patch("/api/loans/:id/reject", requireAdmin, async (req, res) => {
+    try {
+      const loan = await storage.getLoan(req.params.id);
+      if (!loan) return res.status(404).json({ message: "Loan not found" });
+
+      if (loan.status !== 'pending') {
+        return res.status(400).json({ message: "Only pending loans can be rejected" });
+      }
+
+      const updatedLoan = await storage.updateLoan(req.params.id, {
+        status: 'rejected',
+        remarks: req.body.remarks || 'Loan request rejected'
+      });
+
+      res.json(updatedLoan);
+    } catch (error) {
+      console.error('Error rejecting loan:', error);
+      res.status(500).json({ message: "Failed to reject loan" });
+    }
+  });
+
+  app.post("/api/loans/:id/payment", requireAuth, async (req, res) => {
+    try {
+      const loan = await storage.getLoan(req.params.id);
+      if (!loan) return res.status(404).json({ message: "Loan not found" });
+
+      const employee = await storage.getEmployeeByUserId(req.user.id);
+      if (!employee || (loan.employeeId._id || loan.employeeId).toString() !== (employee._id || employee.id).toString()) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+
+      if (loan.status !== 'approved') {
+        return res.status(400).json({ message: "Can only pay for approved loans" });
+      }
+
+      const newPendingAmount = Math.max(0, loan.pendingAmount - loan.monthlyEmi);
+      const nextDueDate = newPendingAmount > 0 ? new Date(loan.nextDueDate) : null;
+      if (nextDueDate) {
+        nextDueDate.setMonth(nextDueDate.getMonth() + 1);
+      }
+
+      const updatedLoan = await storage.updateLoan(req.params.id, {
+        pendingAmount: newPendingAmount,
+        nextDueDate: nextDueDate
+      });
+
+      res.json(updatedLoan);
+    } catch (error) {
+      console.error('Error processing payment:', error);
+      res.status(500).json({ message: "Failed to process payment" });
     }
   });
 

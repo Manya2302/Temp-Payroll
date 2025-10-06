@@ -26,7 +26,9 @@ import Profile from "@/pages/profile.jsx";
 import Reports from "@/pages/reports.jsx";
 import AdminQueries from "./pages/admin-queries";
 import QueryAnswer from "./pages/query-answer";
-import HelpUs from "@/pages/help-us.jsx"; // <-- Add this import
+import HelpUs from "@/pages/help-us.jsx";
+import EmployeeLoans from "@/pages/loans/employee-loans.jsx";
+import AdminLoans from "@/pages/loans/admin-loans.jsx";
 
 function Router() {
   return (
@@ -57,7 +59,9 @@ function Router() {
       <ProtectedRoute path="/attendance" component={AttendanceRoute} />
       <ProtectedRoute path="/profile" component={Profile} />
       <ProtectedRoute path="/reports" component={Reports} />
-      <Route path="/help-us" component={HelpUs} /> {/* <-- Add this line */}
+      <ProtectedRoute path="/loans" component={EmployeeLoans} />
+      <ProtectedRoute path="/admin/loans" component={AdminLoans} />
+      <Route path="/help-us" component={HelpUs} />
       <Route component={NotFound} />
     </Switch>
   );
