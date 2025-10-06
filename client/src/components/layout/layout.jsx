@@ -78,6 +78,12 @@ export default function Layout({ children }) {
     },
     ...(isAdmin ? [
       {
+        name: 'EMI Tracking',
+        href: '/admin/emis',
+        icon: FileText,
+        current: location === '/admin/emis',
+      },
+      {
         name: 'Reports',
         href: '/reports',
         icon: FileText,

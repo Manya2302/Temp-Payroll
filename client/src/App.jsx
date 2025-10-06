@@ -29,6 +29,7 @@ import QueryAnswer from "./pages/query-answer";
 import HelpUs from "@/pages/help-us.jsx";
 import EmployeeLoans from "@/pages/loans/employee-loans.jsx";
 import AdminLoans from "@/pages/loans/admin-loans.jsx";
+import AdminEMIs from "@/pages/admin-emis.jsx";
 
 function Router() {
   return (
@@ -61,6 +62,7 @@ function Router() {
       <ProtectedRoute path="/reports" component={Reports} />
       <ProtectedRoute path="/loans" component={EmployeeLoans} />
       <ProtectedRoute path="/admin/loans" component={AdminLoans} />
+      <ProtectedRoute path="/admin/emis" component={AdminEMIs} />
       <Route path="/help-us" component={HelpUs} />
       <Route component={NotFound} />
     </Switch>
