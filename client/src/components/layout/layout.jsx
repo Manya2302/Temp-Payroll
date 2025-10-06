@@ -13,9 +13,10 @@ import {
   X,
   Clock,
   IndianRupee,
-  Mail, // <-- Add this import
-  Moon, // Add these icons
-  Sun
+  Mail,
+  Moon,
+  Sun,
+  Wallet
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -69,6 +70,12 @@ export default function Layout({ children }) {
       icon: Clock,
       current: location.startsWith('/attendance'),
     },
+    {
+      name: 'Loans',
+      href: isAdmin ? '/admin/loans' : '/loans',
+      icon: Wallet,
+      current: location.startsWith('/loans') || location.startsWith('/admin/loans'),
+    },
     ...(isAdmin ? [
       {
         name: 'Reports',
@@ -77,7 +84,7 @@ export default function Layout({ children }) {
         current: location === '/reports',
       },
       {
-        name: 'Queries', // <-- Add this block
+        name: 'Queries',
         href: '/admin/queries',
         icon: Mail,
         current: location === '/admin/queries',
