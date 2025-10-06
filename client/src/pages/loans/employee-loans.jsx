@@ -16,6 +16,7 @@ export default function EmployeeLoans() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [loans, setLoans] = useState([]);
+  const [emis, setEmis] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
@@ -27,6 +28,7 @@ export default function EmployeeLoans() {
 
   useEffect(() => {
     fetchLoans();
+    fetchEMIs();
   }, []);
 
   const fetchLoans = async () => {
@@ -40,6 +42,52 @@ export default function EmployeeLoans() {
       }
     } catch (error) {
       console.error("Error fetching loans:", error);
+    }
+  };
+
+  const fetchEMIs = async () => {
+    try {
+      const response = await fetch("/api/emis/employee", {
+        credentials: "include"
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setEmis(data);
+      }
+    } catch (error) {
+      console.error("Error fetching EMIs:", error);
+    }
+  };
+
+  const downloadInvoice = async (emiId) => {
+    try {
+      const response = await fetch(`/api/emis/${emiId}/invoice`, {
+        credentials: "include"
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `EMI_Invoice_${emiId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to download invoice",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to download invoice",
+        variant: "destructive"
+      });
     }
   };
 
@@ -101,6 +149,7 @@ export default function EmployeeLoans() {
         setShowPaymentDialog(false);
         setSelectedLoan(null);
         fetchLoans();
+        fetchEMIs();
       } else {
         const error = await response.json();
         toast({
@@ -288,6 +337,52 @@ export default function EmployeeLoans() {
                           disabled={loan.pendingAmount === 0}
                         >
                           Pay Now
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        )}
+
+        {emis.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>EMI Payment History</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Payment Date</TableHead>
+                    <TableHead>Amount Paid</TableHead>
+                    <TableHead>Payment Method</TableHead>
+                    <TableHead>Transaction ID</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Invoice</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {emis.map((emi) => (
+                    <TableRow key={emi._id || emi.id}>
+                      <TableCell>{new Date(emi.paymentDate).toLocaleDateString()}</TableCell>
+                      <TableCell className="font-semibold">₹{emi.amount.toFixed(2)}</TableCell>
+                      <TableCell className="capitalize">{emi.paymentMethod}</TableCell>
+                      <TableCell className="font-mono text-sm">{emi.transactionId.substring(0, 20)}...</TableCell>
+                      <TableCell>
+                        <Badge variant={emi.status === 'completed' ? 'default' : 'secondary'}>
+                          {emi.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => downloadInvoice(emi._id || emi.id)}
+                        >
+                          Download
                         </Button>
                       </TableCell>
                     </TableRow>
