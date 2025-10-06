@@ -7,6 +7,8 @@ import {
   insertAttendanceSchema, Profile, insertProfileSchema, Query, insertLoanSchema
 } from "../shared/mongoose-schema.js";
 import nodemailer from "nodemailer";
+import Razorpay from "razorpay";
+import crypto from "crypto";
 
 const router = express.Router();
 
@@ -698,7 +700,7 @@ export function createRoutes(app) {
     }
   });
 
-  app.post("/api/loans/:id/payment", requireAuth, async (req, res) => {
+  app.post("/api/loans/:id/create-order", requireAuth, async (req, res) => {
     try {
       const loan = await storage.getLoan(req.params.id);
       if (!loan) return res.status(404).json({ message: "Loan not found" });
@@ -712,6 +714,63 @@ export function createRoutes(app) {
         return res.status(400).json({ message: "Can only pay for approved loans" });
       }
 
+      if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+        return res.status(500).json({ message: "Razorpay not configured. Please add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to environment variables." });
+      }
+
+      const razorpay = new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID,
+        key_secret: process.env.RAZORPAY_KEY_SECRET,
+      });
+
+      const options = {
+        amount: Math.round(loan.monthlyEmi * 100),
+        currency: "INR",
+        receipt: `loan_${loan._id || loan.id}_${Date.now()}`,
+      };
+
+      const order = await razorpay.orders.create(options);
+      res.json({
+        orderId: order.id,
+        amount: loan.monthlyEmi,
+        keyId: process.env.RAZORPAY_KEY_ID
+      });
+    } catch (error) {
+      console.error('Error creating Razorpay order:', error);
+      res.status(500).json({ message: "Failed to create payment order" });
+    }
+  });
+
+  app.post("/api/loans/:id/verify-payment", requireAuth, async (req, res) => {
+    try {
+      const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+      if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+        return res.status(400).json({ message: "Missing payment details" });
+      }
+
+      const loan = await storage.getLoan(req.params.id);
+      if (!loan) return res.status(404).json({ message: "Loan not found" });
+
+      const employee = await storage.getEmployeeByUserId(req.user.id);
+      if (!employee || (loan.employeeId._id || loan.employeeId).toString() !== (employee._id || employee.id).toString()) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+
+      if (!process.env.RAZORPAY_KEY_SECRET) {
+        return res.status(500).json({ message: "Razorpay not configured" });
+      }
+
+      const body = razorpay_order_id + "|" + razorpay_payment_id;
+      const expectedSignature = crypto
+        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+        .update(body.toString())
+        .digest("hex");
+
+      if (expectedSignature !== razorpay_signature) {
+        return res.status(400).json({ message: "Payment verification failed" });
+      }
+
       const newPendingAmount = Math.max(0, loan.pendingAmount - loan.monthlyEmi);
       const nextDueDate = newPendingAmount > 0 ? new Date(loan.nextDueDate) : null;
       if (nextDueDate) {
@@ -723,10 +782,10 @@ export function createRoutes(app) {
         nextDueDate: nextDueDate
       });
 
-      res.json(updatedLoan);
+      res.json({ success: true, loan: updatedLoan });
     } catch (error) {
-      console.error('Error processing payment:', error);
-      res.status(500).json({ message: "Failed to process payment" });
+      console.error('Error verifying payment:', error);
+      res.status(500).json({ message: "Failed to verify payment" });
     }
   });
 

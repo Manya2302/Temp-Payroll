@@ -79,27 +79,85 @@ export default function EmployeeLoans() {
 
   const handlePayment = async (loanId, emiAmount) => {
     try {
-      const response = await fetch(`/api/loans/${loanId}/payment`, {
+      const orderResponse = await fetch(`/api/loans/${loanId}/create-order`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ paymentId: "razorpay_payment_id" })
+        credentials: "include"
       });
 
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Payment processed successfully"
-        });
-        fetchLoans();
-      } else {
-        const error = await response.json();
+      if (!orderResponse.ok) {
+        const error = await orderResponse.json();
         toast({
           title: "Error",
-          description: error.message || "Payment failed",
+          description: error.message || "Failed to create payment order",
           variant: "destructive"
         });
+        return;
       }
+
+      const { orderId, amount, keyId } = await orderResponse.json();
+
+      if (!window.Razorpay) {
+        toast({
+          title: "Error",
+          description: "Razorpay SDK not loaded. Please refresh the page.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const options = {
+        key: keyId,
+        amount: Math.round(amount * 100),
+        currency: "INR",
+        name: "Loco Payroll",
+        description: "EMI Payment",
+        order_id: orderId,
+        handler: async function (response) {
+          try {
+            const verifyResponse = await fetch(`/api/loans/${loanId}/verify-payment`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+              })
+            });
+
+            if (verifyResponse.ok) {
+              toast({
+                title: "Success",
+                description: "Payment processed successfully"
+              });
+              fetchLoans();
+            } else {
+              const error = await verifyResponse.json();
+              toast({
+                title: "Error",
+                description: error.message || "Payment verification failed",
+                variant: "destructive"
+              });
+            }
+          } catch (error) {
+            toast({
+              title: "Error",
+              description: "Payment verification failed",
+              variant: "destructive"
+            });
+          }
+        },
+        prefill: {
+          name: user?.username || "",
+        },
+        theme: {
+          color: "#3399cc"
+        }
+      };
+
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.open();
     } catch (error) {
       toast({
         title: "Error",
