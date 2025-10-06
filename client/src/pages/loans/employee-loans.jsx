@@ -9,12 +9,16 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import Layout from "@/components/layout/layout";
+import PayPalButton from "@/components/PayPalButton";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 export default function EmployeeLoans() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [loans, setLoans] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedLoan, setSelectedLoan] = useState(null);
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [formData, setFormData] = useState({
     loanAmount: "",
     repaymentPeriod: "",
@@ -77,87 +81,34 @@ export default function EmployeeLoans() {
     }
   };
 
-  const handlePayment = async (loanId, emiAmount) => {
+  const handlePaymentSuccess = async (paymentData) => {
     try {
-      const orderResponse = await fetch(`/api/loans/${loanId}/create-order`, {
+      const response = await fetch(`/api/loans/${selectedLoan._id || selectedLoan.id}/paypal-payment`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include"
+        credentials: "include",
+        body: JSON.stringify({
+          orderID: paymentData.id,
+          paymentDetails: paymentData
+        })
       });
 
-      if (!orderResponse.ok) {
-        const error = await orderResponse.json();
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: "Payment processed successfully"
+        });
+        setShowPaymentDialog(false);
+        setSelectedLoan(null);
+        fetchLoans();
+      } else {
+        const error = await response.json();
         toast({
           title: "Error",
-          description: error.message || "Failed to create payment order",
+          description: error.message || "Payment processing failed",
           variant: "destructive"
         });
-        return;
       }
-
-      const { orderId, amount, keyId } = await orderResponse.json();
-
-      if (!window.Razorpay) {
-        toast({
-          title: "Error",
-          description: "Razorpay SDK not loaded. Please refresh the page.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      const options = {
-        key: keyId,
-        amount: Math.round(amount * 100),
-        currency: "INR",
-        name: "Loco Payroll",
-        description: "EMI Payment",
-        order_id: orderId,
-        handler: async function (response) {
-          try {
-            const verifyResponse = await fetch(`/api/loans/${loanId}/verify-payment`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              credentials: "include",
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature
-              })
-            });
-
-            if (verifyResponse.ok) {
-              toast({
-                title: "Success",
-                description: "Payment processed successfully"
-              });
-              fetchLoans();
-            } else {
-              const error = await verifyResponse.json();
-              toast({
-                title: "Error",
-                description: error.message || "Payment verification failed",
-                variant: "destructive"
-              });
-            }
-          } catch (error) {
-            toast({
-              title: "Error",
-              description: "Payment verification failed",
-              variant: "destructive"
-            });
-          }
-        },
-        prefill: {
-          name: user?.username || "",
-        },
-        theme: {
-          color: "#3399cc"
-        }
-      };
-
-      const paymentObject = new window.Razorpay(options);
-      paymentObject.open();
     } catch (error) {
       toast({
         title: "Error",
@@ -165,6 +116,23 @@ export default function EmployeeLoans() {
         variant: "destructive"
       });
     }
+  };
+
+  const handlePaymentError = (error) => {
+    toast({
+      title: "Error",
+      description: "Payment failed. Please try again.",
+      variant: "destructive"
+    });
+    console.error("Payment error:", error);
+  };
+
+  const handlePaymentCancel = () => {
+    toast({
+      title: "Payment Cancelled",
+      description: "You cancelled the payment.",
+      variant: "default"
+    });
   };
 
   const pendingLoan = loans.find(loan => loan.status === "pending");
@@ -313,7 +281,10 @@ export default function EmployeeLoans() {
                       <TableCell>
                         <Button
                           size="sm"
-                          onClick={() => handlePayment(loan._id || loan.id, loan.monthlyEmi)}
+                          onClick={() => {
+                            setSelectedLoan(loan);
+                            setShowPaymentDialog(true);
+                          }}
                           disabled={loan.pendingAmount === 0}
                         >
                           Pay Now
@@ -326,6 +297,42 @@ export default function EmployeeLoans() {
             </CardContent>
           </Card>
         )}
+
+        <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Pay EMI with PayPal</DialogTitle>
+              <DialogDescription>
+                You are about to pay ₹{selectedLoan?.monthlyEmi.toFixed(2)} for your loan EMI using PayPal.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <p className="text-sm">
+                  <span className="font-medium">Loan Amount:</span> ₹{selectedLoan?.loanAmount.toFixed(2)}
+                </p>
+                <p className="text-sm">
+                  <span className="font-medium">Pending Amount:</span> ₹{selectedLoan?.pendingAmount.toFixed(2)}
+                </p>
+                <p className="text-sm">
+                  <span className="font-medium">EMI Amount:</span> ₹{selectedLoan?.monthlyEmi.toFixed(2)}
+                </p>
+              </div>
+              {selectedLoan && (
+                <div className="flex justify-center">
+                  <PayPalButton
+                    amount={selectedLoan.monthlyEmi.toFixed(2)}
+                    currency="USD"
+                    intent="CAPTURE"
+                    onSuccess={handlePaymentSuccess}
+                    onError={handlePaymentError}
+                    onCancel={handlePaymentCancel}
+                  />
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
